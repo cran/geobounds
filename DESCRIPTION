@@ -1,10 +1,11 @@
 Package: geobounds
 Title: Download Map Data from 'geoBoundaries'
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: c(
     person("Diego", "Hernangómez", , "diego.hernangomezherrero@gmail.com", role = c("aut", "cre", "cph"),
            comment = c(ORCID = "0000-0001-8457-4658")),
-    person("William and Mary geoLab", role = "cph")
+    person("William and Mary geoLab", role = "cph",
+           comment = c(ROR = "03hsf0573"))
   )
 Description: Tools to download data from 'geoBoundaries'
     <https://www.geoboundaries.org/>. Several administration levels
@@ -17,11 +18,10 @@ URL: https://dieghernan.github.io/geobounds/,
 BugReports: https://github.com/dieghernan/geobounds/issues
 Depends: R (>= 4.1.0)
 Imports: cli, countrycode, dplyr, httr2 (>= 1.0.0), sf, tools, utils
-Suggests: ggplot2, jsonlite, knitr, rmarkdown, testthat (>= 3.0.0),
-        tibble
-VignetteBuilder: knitr
+Suggests: ggplot2, jsonlite, knitr, quarto, testthat (>= 3.0.0), tibble
+VignetteBuilder: quarto
 Config/Needs/website: dieghernan/gitdevr, xfun, devtools, remotes,
-        reactable, magick
+        reactable
 Config/testthat/edition: 3
 Config/testthat/parallel: false
 Copyright: Attribution required. See file COPYRIGHTS for specific
@@ -30,12 +30,12 @@ Encoding: UTF-8
 Language: en-US
 RoxygenNote: 7.3.3
 X-schema.org-keywords: administrative-boundaries, api, geoboundaries,
-        r, r-package, spatial-data
+        r, r-package, spatial-data, cran, cran-r
 NeedsCompilation: no
-Packaged: 2026-02-09 05:37:13 UTC; diego
+Packaged: 2026-03-24 17:56:38 UTC; diego
 Author: Diego Hernangómez [aut, cre, cph] (ORCID:
     <https://orcid.org/0000-0001-8457-4658>),
-  William and Mary geoLab [cph]
+  William and Mary geoLab [cph] (ROR: <https://ror.org/03hsf0573>)
 Maintainer: Diego Hernangómez <diego.hernangomezherrero@gmail.com>
 Repository: CRAN
-Date/Publication: 2026-02-11 20:00:02 UTC
+Date/Publication: 2026-03-24 18:10:02 UTC

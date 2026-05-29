@@ -3,7 +3,7 @@
 \encoding{UTF-8}
 \name{gb_detect_cache_dir}
 \alias{gb_detect_cache_dir}
-\title{Detect cache directory for \pkg{geobounds}}
+\title{Detect the \CRANpkg{geobounds} cache directory}
 \usage{
 gb_detect_cache_dir(x = NULL)
 }
@@ -11,20 +11,19 @@ gb_detect_cache_dir(x = NULL)
 \item{x}{Ignored.}
 }
 \value{
-A character with the path to your \code{cache_dir}. The same path will appear
-also as a clickable message, see \code{\link[cli:inline-markup]{cli::inline-markup}}.
+A character vector with the path to your \code{cache_dir}. The same path also
+appears as a clickable message. See \code{\link[cli:inline-markup]{cli::inline-markup}}.
 }
 \description{
-Helper function to detect the current cache folder. See
-\code{\link[=gb_set_cache_dir]{gb_set_cache_dir()}}.
+Detect the current cache folder. See \code{\link[=gb_set_cache_dir]{gb_set_cache_dir()}}.
 }
 \examples{
 gb_detect_cache_dir()
 
 }
 \seealso{
-Other cache utilities: 
-\code{\link{gb_clear_cache}()},
-\code{\link{gb_set_cache_dir}()}
+Other cache utilities:
+\code{\link[=gb_clear_cache]{gb_clear_cache()}},
+\code{\link[=gb_set_cache_dir]{gb_set_cache_dir()}}
 }
 \concept{cache utilities}

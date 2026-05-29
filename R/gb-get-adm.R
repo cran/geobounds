@@ -1,47 +1,37 @@
-#' Get country files from geoBoundaries for a given administrative level
+#' Get individual country files for a given administrative level
 #'
 #' @description
-#'
 #' [Attribution](https://www.geoboundaries.org/index.html#usage) is required
 #' for all uses of this dataset.
 #'
-#' These functions are wrappers of [gb_get()] for extracting any
-#' given administrative level:
-#'
-#' - `gb_get_adm0()` returns the country boundary.
-#' - `gb_get_adm1()` returns first-level administrative
-#'   boundaries (e.g. States in the United States).
-#' - `gb_get_adm2()` returns second-level administrative
-#'   boundaries (e.g. Counties in the United States).
-#' - `gb_get_adm3()` returns third-level administrative
-#'   boundaries (e.g. towns or cities in some countries).
-#' - `gb_get_adm4()` returns fourth-level administrative
-#'   boundaries.
-#' - `gb_get_adm5()` returns fifth-level administrative
-#'   boundaries.
+#' These functions are wrappers around [gb_get()] for extracting a given
+#' administrative level. `gb_get_adm0()` returns the country boundary,
+#' `gb_get_adm1()` returns first-level subnational boundaries (e.g. states in
+#' the United States), `gb_get_adm2()` returns second-level subnational
+#' boundaries (e.g. counties in the United States), `gb_get_adm3()` returns
+#' third-level administrative boundaries (e.g. towns or cities in some
+#' countries), `gb_get_adm4()` returns fourth-level administrative boundaries
+#' and `gb_get_adm5()` returns fifth-level administrative boundaries.
 #'
 #' Note that not all countries have the same number of levels. Check
-#' [gb_get_max_adm_lvl].
+#' [gb_get_max_adm_lvl()].
 #'
-#' @rdname gb_get_adm
-#' @name gb_get_adm
-#' @encoding UTF-8
+#' @details
+#' Individual country files in the geoBoundaries database are governed by the
+#' license or licenses identified within the metadata for each respective
+#' boundary. See [gb_get_metadata()]. Users of individual boundary files from
+#' geoBoundaries should also cite the sources provided in the metadata for each
+#' file.
 #'
 #' @inherit gb_get
 #' @inheritParams gb_get
 #'
-#' @family API functions
+#' @rdname gb_get_adm
+#' @name gb_get_adm
 #'
 #' @seealso [gb_get_max_adm_lvl()].
 #'
-#' @export
-#'
-#' @details
-#' Individual data files in the geoBoundaries database are governed by the
-#' license or licenses identified within the metadata for each respective
-#' boundary (see [gb_get_metadata()]. Users using individual boundary files
-#' from geoBoundaries should additionally ensure that they are citing the
-#' sources provided in the metadata for each file.
+#' @family API functions
 #'
 #' @examplesIf identical(Sys.getenv("NOT_CRAN"), "true") || interactive()
 #' \donttest{
@@ -55,12 +45,14 @@
 #' ggplot(lev2) +
 #'   geom_sf(aes(fill = shapeGroup)) +
 #'   labs(
-#'     title = "Second-level administration",
+#'     title = "Second-level administrative boundaries",
 #'     subtitle = "Selected countries",
 #'     caption = "Source: www.geoboundaries.org"
 #'   )
 #' }
 #'
+#' @export
+#' @encoding UTF-8
 gb_get_adm0 <- function(
   country,
   simplified = FALSE,

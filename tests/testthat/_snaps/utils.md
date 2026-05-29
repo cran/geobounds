@@ -10,8 +10,8 @@
     Code
       gbnds_dev_country2iso(c("ESP", "POR", "RTA", "USA"))
     Message
-      ! Some values were not matched unambiguously: POR and RTA
-      i Review the names or switch to ISO3 codes.
+      ! Some values could not be matched unambiguously: POR and RTA.
+      i Review the names or switch to ISO 3166-1 alpha-3 codes.
     Output
       [1] "ESP" "USA"
 
@@ -55,8 +55,8 @@
     Code
       gbnds_dev_country2iso(c("Spain", "Rea", "Kosovo", "Antartica", "Murcua"))
     Message
-      ! Some values were not matched unambiguously: Rea and Murcua
-      i Review the names or switch to ISO3 codes.
+      ! Some values could not be matched unambiguously: Rea and Murcua.
+      i Review the names or switch to ISO 3166-1 alpha-3 codes.
     Output
       [1] "ESP" "XKX" "ATA"
 
@@ -80,7 +80,7 @@
       assert_adm_lvl(1:2)
     Condition
       Error in `assert_adm_lvl()`:
-      ! You can't mix different `adm_lvl`. You entered 1 and 2.
+      ! You cannot mix different `adm_lvl`. You entered 1 and 2.
 
 ---
 
@@ -88,7 +88,7 @@
       assert_adm_lvl(adm_lvl = 10)
     Condition
       Error in `assert_adm_lvl()`:
-      ! Not a valid `adm_lvl` level code ("10").
+      ! Invalid `adm_lvl` level code ("10").
       Accepted values are "all", "adm0", "adm1", "adm2", "adm3", "adm4", "adm5", "0", "1", "2", "3", "4", and "5".
 
 # Pretty match

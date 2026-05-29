@@ -4,30 +4,29 @@
 #' Get a summary of selected or all countries and their highest administrative
 #' level available in geoBoundaries.
 #'
-#' @family metadata functions
-#'
 #' @inherit gb_get source
 #' @inheritParams gb_get_metadata
-#' @encoding UTF-8
 #'
-#' @return
+#' @returns
 #' A [tibble][tibble::tbl_df] with the country names and corresponding highest
 #' administrative level.
 #'
-#' @export
+#' @family metadata functions
 #'
 #' @examplesIf identical(Sys.getenv("NOT_CRAN"), "true") || interactive()
 #' all <- gb_get_max_adm_lvl()
 #' library(dplyr)
 #'
-#' # Countries with only 1 level available
+#' # Countries with only one level available.
 #' all |>
 #'   filter(maxBoundaryType == 1)
 #'
-#' # Countries with level 4 available
+#' # Countries with level 4 available.
 #' all |>
 #'   filter(maxBoundaryType == 4)
 #'
+#' @export
+#' @encoding UTF-8
 gb_get_max_adm_lvl <- function(
   country = "all",
   release_type = c("gbOpen", "gbHumanitarian", "gbAuthoritative")

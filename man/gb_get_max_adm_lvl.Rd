@@ -5,7 +5,7 @@
 \alias{gb_get_max_adm_lvl}
 \title{Get the highest administrative level available for a given country}
 \source{
-geoBoundaries API Service \url{https://www.geoboundaries.org/api.html}.
+geoBoundaries API service \url{https://www.geoboundaries.org/api.html}.
 }
 \usage{
 gb_get_max_adm_lvl(
@@ -16,22 +16,19 @@ gb_get_max_adm_lvl(
 \arguments{
 \item{country}{A character vector of country codes. It can be either
 \code{"all"} (which returns the data for all countries), a vector of country
-names, or ISO3 country codes. See also \code{\link[countrycode:countrycode]{countrycode::countrycode()}}.}
+names or ISO 3166-1 alpha-3 country codes. See also
+\code{\link[countrycode:countrycode]{countrycode::countrycode()}}.}
 
-\item{release_type}{One of \code{"gbOpen"}, \code{"gbHumanitarian"},
+\item{release_type}{One of \code{"gbOpen"}, \code{"gbHumanitarian"} or
 \code{"gbAuthoritative"}. For most users, we suggest using \code{"gbOpen"}
-(the default), as it is CC-BY 4.0 compliant and can be used for most
-purposes so long as attribution is provided:
-\itemize{
-\item \code{"gbHumanitarian"} files are mirrored from
-\href{https://www.unocha.org/}{UN OCHA}, but may have more restrictive
-licensing.
-\item \code{"gbAuthoritative"} files are mirrored from UN SALB, and cannot be used
-for commercial purposes, but are verified through in-country processes.
-}}
+(the default), as it is CC BY 4.0 compliant and suitable for most purposes
+so long as attribution is provided. \code{"gbHumanitarian"} files are mirrored
+from \href{https://www.unocha.org/}{UN OCHA} and may have less open licensure.
+\code{"gbAuthoritative"} files are mirrored from UN SALB, verified through
+in-country processes and cannot be used for commercial purposes.}
 }
 \value{
-A \link[tibble:tbl_df-class]{tibble} with the country names and corresponding highest
+A \link[tibble:tbl_df]{tibble} with the country names and corresponding highest
 administrative level.
 }
 \description{
@@ -43,17 +40,17 @@ level available in geoBoundaries.
 all <- gb_get_max_adm_lvl()
 library(dplyr)
 
-# Countries with only 1 level available
+# Countries with only one level available.
 all |>
   filter(maxBoundaryType == 1)
 
-# Countries with level 4 available
+# Countries with level 4 available.
 all |>
   filter(maxBoundaryType == 4)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-Other metadata functions: 
-\code{\link{gb_get_metadata}()}
+Other metadata functions:
+\code{\link[=gb_get_metadata]{gb_get_metadata()}}
 }
 \concept{metadata functions}

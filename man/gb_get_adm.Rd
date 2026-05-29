@@ -9,9 +9,9 @@
 \alias{gb_get_adm3}
 \alias{gb_get_adm4}
 \alias{gb_get_adm5}
-\title{Get country files from geoBoundaries for a given administrative level}
+\title{Get individual country files for a given administrative level}
 \source{
-geoBoundaries API Service \url{https://www.geoboundaries.org/api.html}.
+geoBoundaries API service \url{https://www.geoboundaries.org/api.html}.
 }
 \usage{
 gb_get_adm0(
@@ -71,66 +71,57 @@ gb_get_adm5(
 \arguments{
 \item{country}{A character vector of country codes. It can be either
 \code{"all"} (which returns the data for all countries), a vector of country
-names, or ISO3 country codes. See also \code{\link[countrycode:countrycode]{countrycode::countrycode()}}.}
+names or ISO 3166-1 alpha-3 country codes. See also
+\code{\link[countrycode:countrycode]{countrycode::countrycode()}}.}
 
-\item{simplified}{logical. Return the simplified boundary or not. The default
-\code{FALSE} uses the premier geoBoundaries release.}
+\item{simplified}{Logical. If \code{TRUE}, return the simplified boundary. The
+default \code{FALSE} uses the primary geoBoundaries release. See simplified
+boundaries at \url{https://www.geoboundaries.org/}.}
 
-\item{release_type}{One of \code{"gbOpen"}, \code{"gbHumanitarian"},
+\item{release_type}{One of \code{"gbOpen"}, \code{"gbHumanitarian"} or
 \code{"gbAuthoritative"}. For most users, we suggest using \code{"gbOpen"}
-(the default), as it is CC-BY 4.0 compliant and can be used for most
-purposes so long as attribution is provided:
-\itemize{
-\item \code{"gbHumanitarian"} files are mirrored from
-\href{https://www.unocha.org/}{UN OCHA}, but may have more restrictive
-licensing.
-\item \code{"gbAuthoritative"} files are mirrored from UN SALB, and cannot be used
-for commercial purposes, but are verified through in-country processes.
-}}
+(the default), as it is CC BY 4.0 compliant and suitable for most purposes
+so long as attribution is provided. \code{"gbHumanitarian"} files are mirrored
+from \href{https://www.unocha.org/}{UN OCHA} and may have less open licensure.
+\code{"gbAuthoritative"} files are mirrored from UN SALB, verified through
+in-country processes and cannot be used for commercial purposes.}
 
-\item{quiet}{logical. If \code{TRUE} suppresses informational messages.}
+\item{quiet}{Logical. If \code{TRUE}, suppress informational messages.}
 
-\item{overwrite}{logical. When set to \code{TRUE} it will force a fresh
-download of the source \code{.zip} file.}
+\item{overwrite}{Logical. If \code{TRUE}, force a fresh download of the source
+\code{.zip} file.}
 
 \item{cache_dir}{A path to a cache directory. If not set (the default
 \code{NULL}), the data will be stored in the default cache directory (see
 \code{\link[=gb_set_cache_dir]{gb_set_cache_dir()}}). If no cache directory has been set, files will be
-stored in the temporary directory (see \code{base::tempdir()}). See caching
+stored in the temporary directory. See \code{\link[base:tempdir]{base::tempdir()}} and caching
 strategies in \code{\link[=gb_set_cache_dir]{gb_set_cache_dir()}}.}
 }
 \value{
-A \code{\link[sf:sf]{sf}} object.
+A \code{\link[sf:st_sf]{sf}} object.
 }
 \description{
 \href{https://www.geoboundaries.org/index.html#usage}{Attribution} is required
 for all uses of this dataset.
 
-These functions are wrappers of \code{\link[=gb_get]{gb_get()}} for extracting any
-given administrative level:
-\itemize{
-\item \code{gb_get_adm0()} returns the country boundary.
-\item \code{gb_get_adm1()} returns first-level administrative
-boundaries (e.g. States in the United States).
-\item \code{gb_get_adm2()} returns second-level administrative
-boundaries (e.g. Counties in the United States).
-\item \code{gb_get_adm3()} returns third-level administrative
-boundaries (e.g. towns or cities in some countries).
-\item \code{gb_get_adm4()} returns fourth-level administrative
-boundaries.
-\item \code{gb_get_adm5()} returns fifth-level administrative
-boundaries.
-}
+These functions are wrappers around \code{\link[=gb_get]{gb_get()}} for extracting a given
+administrative level. \code{gb_get_adm0()} returns the country boundary,
+\code{gb_get_adm1()} returns first-level subnational boundaries (e.g. states in
+the United States), \code{gb_get_adm2()} returns second-level subnational
+boundaries (e.g. counties in the United States), \code{gb_get_adm3()} returns
+third-level administrative boundaries (e.g. towns or cities in some
+countries), \code{gb_get_adm4()} returns fourth-level administrative boundaries
+and \code{gb_get_adm5()} returns fifth-level administrative boundaries.
 
 Note that not all countries have the same number of levels. Check
-\link{gb_get_max_adm_lvl}.
+\code{\link[=gb_get_max_adm_lvl]{gb_get_max_adm_lvl()}}.
 }
 \details{
-Individual data files in the geoBoundaries database are governed by the
+Individual country files in the geoBoundaries database are governed by the
 license or licenses identified within the metadata for each respective
-boundary (see \code{\link[=gb_get_metadata]{gb_get_metadata()}}. Users using individual boundary files
-from geoBoundaries should additionally ensure that they are citing the
-sources provided in the metadata for each file.
+boundary. See \code{\link[=gb_get_metadata]{gb_get_metadata()}}. Users of individual boundary files from
+geoBoundaries should also cite the sources provided in the metadata for each
+file.
 }
 \examples{
 \dontshow{if (identical(Sys.getenv("NOT_CRAN"), "true") || interactive()) withAutoprint(\{ # examplesIf}
@@ -145,7 +136,7 @@ library(ggplot2)
 ggplot(lev2) +
   geom_sf(aes(fill = shapeGroup)) +
   labs(
-    title = "Second-level administration",
+    title = "Second-level administrative boundaries",
     subtitle = "Selected countries",
     caption = "Source: www.geoboundaries.org"
   )
@@ -160,8 +151,8 @@ administrative boundaries. \emph{PLOS ONE} \emph{15}(4), 1-9.
 \seealso{
 \code{\link[=gb_get_max_adm_lvl]{gb_get_max_adm_lvl()}}.
 
-Other API functions: 
-\code{\link{gb_get}()},
-\code{\link{gb_get_world}()}
+Other API functions:
+\code{\link[=gb_get]{gb_get()}},
+\code{\link[=gb_get_world]{gb_get_world()}}
 }
 \concept{API functions}

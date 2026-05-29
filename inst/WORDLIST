@@ -3,6 +3,7 @@ Baier
 CGAZ
 CMD
 CodeFactor
+GeoJSON
 Kosovo
 OCHA
 ORCID
@@ -11,7 +12,9 @@ ROR
 Runfola
 SALB
 SDG
+TopoJSON
 al
+callout
 choropleth
 codecov
 doi
@@ -23,7 +26,9 @@ geoBoundaries
 geoLab
 geojsonsf
 geospatial
-modelling
+licensure
 pkgdown
+roxygen
+subnational
 subregion
 tidyverse

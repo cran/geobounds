@@ -1,16 +1,18 @@
 Package: geobounds
-Title: Download Map Data from 'geoBoundaries'
-Version: 0.1.1
+Title: Download Administrative Boundary Data from 'geoBoundaries'
+Version: 0.1.2
 Authors@R: c(
     person("Diego", "Hernangómez", , "diego.hernangomezherrero@gmail.com", role = c("aut", "cre", "cph"),
            comment = c(ORCID = "0000-0001-8457-4658")),
     person("William and Mary geoLab", role = "cph",
            comment = c(ROR = "03hsf0573"))
   )
-Description: Tools to download data from 'geoBoundaries'
-    <https://www.geoboundaries.org/>. Several administration levels
-    available. See Runfola, D. et al. (2020) geoBoundaries: A global
-    database of political administrative boundaries. PLOS ONE 15(4): 1-9.
+Description: Tools for downloading administrative boundary data from
+    'geoBoundaries' <https://www.geoboundaries.org/> across multiple
+    administrative levels. Boundary data are returned as 'sf' objects for
+    mapping and spatial analysis. See Runfola, D. et al. (2020)
+    "geoBoundaries: A global database of political administrative
+    boundaries." PLOS ONE 15(4), e0231866.
     <doi:10.1371/journal.pone.0231866>.
 License: CC BY 4.0
 URL: https://dieghernan.github.io/geobounds/,
@@ -22,20 +24,21 @@ Suggests: ggplot2, jsonlite, knitr, quarto, testthat (>= 3.0.0), tibble
 VignetteBuilder: quarto
 Config/Needs/website: dieghernan/gitdevr, xfun, devtools, remotes,
         reactable
+Config/roxygen2/markdown: TRUE
+Config/roxygen2/version: 8.0.0
 Config/testthat/edition: 3
 Config/testthat/parallel: false
 Copyright: Attribution required. See file COPYRIGHTS for specific
         provisions.
 Encoding: UTF-8
 Language: en-US
-RoxygenNote: 7.3.3
 X-schema.org-keywords: administrative-boundaries, api, geoboundaries,
         r, r-package, spatial-data, cran, cran-r
 NeedsCompilation: no
-Packaged: 2026-03-24 17:56:38 UTC; diego
+Packaged: 2026-05-29 11:03:28 UTC; diego
 Author: Diego Hernangómez [aut, cre, cph] (ORCID:
     <https://orcid.org/0000-0001-8457-4658>),
   William and Mary geoLab [cph] (ROR: <https://ror.org/03hsf0573>)
 Maintainer: Diego Hernangómez <diego.hernangomezherrero@gmail.com>
 Repository: CRAN
-Date/Publication: 2026-03-24 18:10:02 UTC
+Date/Publication: 2026-05-29 11:30:09 UTC

@@ -5,59 +5,62 @@
 \alias{gb_set_cache_dir}
 \title{Set the \CRANpkg{geobounds} cache directory}
 \usage{
-gb_set_cache_dir(cache_dir, overwrite = FALSE, install = FALSE, quiet = FALSE)
+gb_set_cache_dir(
+  cache_dir = NULL,
+  overwrite = FALSE,
+  install = FALSE,
+  quiet = FALSE
+)
 }
 \arguments{
-\item{cache_dir}{A path to a cache directory. If missing, the function
-will store the cache files in a temporary directory (see
-\code{\link[base:tempdir]{base::tempdir()}}).}
+\item{cache_dir}{A path to a cache directory. If \code{NULL}, the function stores
+cached archives in a temporary directory. See \code{\link[base:tempdir]{base::tempdir()}}.}
 
-\item{overwrite}{Logical. If \code{TRUE}, overwrite an existing \code{cache_dir}.}
+\item{overwrite}{A logical value. If \code{TRUE}, replace a cache directory
+already saved in the configuration file.}
 
-\item{install}{Logical. If \code{TRUE}, install the cache path on your local
-machine for use in future sessions. Defaults to \code{FALSE}. If \code{cache_dir}
-is missing or empty, this parameter is set to \code{FALSE} automatically.}
+\item{install}{A logical value. If \code{TRUE}, save the cache directory for use
+in future sessions. Defaults to \code{FALSE}. If \code{cache_dir} is \code{NULL}, this
+parameter is set to \code{FALSE} automatically.}
 
-\item{quiet}{Logical. If \code{TRUE}, suppress informational messages.}
+\item{quiet}{A logical value. If \code{TRUE}, suppress informational messages.}
 }
 \value{
-An invisible character vector with the path to \code{cache_dir}.
+An invisible character scalar containing the path to the cache directory.
 }
 \description{
-This function stores the \code{cache_dir} path on your local machine and loads it
-for future sessions. Use \code{gb_detect_cache_dir()} to find the cache directory
-path.
+Sets the active cache directory and optionally saves it for future sessions.
+Use \code{\link[=gb_detect_cache_dir]{gb_detect_cache_dir()}} to find the active cache directory.
 }
 \details{
-By default, when no \code{cache_dir} is set the package uses a folder inside
-\code{\link[base:tempdir]{base::tempdir()}}, so files are temporary and are removed when the \R
-session ends. To persist a cache across \R sessions, use
-\code{gb_set_cache_dir(path, install = TRUE)}, which writes the chosen path to a
-small configuration file under \code{tools::R_user_dir("geobounds", "config")}.
+By default, when no \code{cache_dir} is set, \CRANpkg{geobounds} uses a directory
+inside \code{\link[base:tempdir]{base::tempdir()}}. Cached archives in this directory are removed when
+the \R session ends. To reuse a cache directory across \R sessions, use
+\code{gb_set_cache_dir(cache_dir = "a/path/here", install = TRUE)}. This saves the
+directory in a configuration file under
+\code{tools::R_user_dir("geobounds", "config")}.
 }
-\section{Caching strategies}{
+\section{Cache strategies}{
 
 \itemize{
-\item For occasional use, rely on the default \code{\link[=tempdir]{tempdir()}}-based cache with no
-installation.
-\item Modify the cache for a single session with
+\item For occasional use, use the default temporary cache directory.
+\item Set the cache directory for the current session with
 \code{gb_set_cache_dir(cache_dir = "a/path/here")}.
-\item For reproducible workflows, install a persistent cache that is kept across
-\R sessions with
+\item Save a persistent cache directory for future \R sessions with
 \code{gb_set_cache_dir(cache_dir = "a/path/here", install = TRUE)}.
-\item To cache specific files, use the \code{cache_dir} argument in the corresponding
-function. See \code{\link[=gb_get]{gb_get()}}.
+\item Set the cache directory for an individual download with the \code{cache_dir}
+argument. See \code{\link[=gb_get]{gb_get()}}.
 }
 }
 
 \examples{
 
-# Caution! This may modify your current state.
+# Caution: this may modify your current state.
 
 \dontrun{
 my_cache <- gb_detect_cache_dir()
 
-# Set an example cache.
+# Set an example cache directory.
 ex <- file.path(tempdir(), "example", "cachenew")
 gb_set_cache_dir(ex)
 
@@ -71,10 +74,11 @@ identical(my_cache, gb_detect_cache_dir())
 gb_detect_cache_dir()
 }
 \seealso{
-\code{\link[tools:R_user_dir]{tools::R_user_dir()}}.
+\code{\link[tools:R_user_dir]{tools::R_user_dir()}} identifies standard locations for
+user-specific files.
 
-Other cache utilities:
+Cache management functions:
 \code{\link[=gb_clear_cache]{gb_clear_cache()}},
 \code{\link[=gb_detect_cache_dir]{gb_detect_cache_dir()}}
 }
-\concept{cache utilities}
+\concept{cache}

@@ -20,8 +20,8 @@
           "name": "William and Mary geoLab"
         }
       ],
-      "description": "Tools for downloading administrative boundary data from 'geoBoundaries' <https://www.geoboundaries.org/> across multiple administrative levels. Boundary data are returned as 'sf' objects for mapping and spatial analysis. See Runfola, D. et al. (2020) \"geoBoundaries: A global database of political administrative boundaries.\" PLOS ONE 15(4), e0231866. <doi:10.1371/journal.pone.0231866>.",
-      "license": "https://spdx.org/licenses/CC-BY-4.0",
+      "description": "Provides tools to download individual country boundaries and global composite boundaries from 'geoBoundaries' <https://www.geoboundaries.org/> across multiple administrative ('ADM') levels. Returns boundaries as 'sf' objects for mapping and spatial analysis. Runfola et al. (2020) <doi:10.1371/journal.pone.0231866> describe the underlying database.",
+      "license": "https://spdx.org/licenses/MIT",
       "name": "geobounds: Download Administrative Boundary Data from 'geoBoundaries'",
       "programmingLanguage": {
         "type": "ComputerLanguage",
@@ -34,8 +34,8 @@
         "name": "Comprehensive R Archive Network (CRAN)",
         "url": "https://cran.r-project.org"
       },
-      "runtimePlatform": "R version 4.6.0 (2026-04-24 ucrt)",
-      "version": "0.1.2"
+      "runtimePlatform": "R version 4.6.1 (2026-06-24 ucrt)",
+      "version": "1.0.0"
     },
     {
       "id": "https://doi.org/10.32614/CRAN.package.geobounds",

@@ -8,22 +8,22 @@
 gb_detect_cache_dir(x = NULL)
 }
 \arguments{
-\item{x}{Ignored.}
+\item{x}{An object. Ignored.}
 }
 \value{
-A character vector with the path to your \code{cache_dir}. The same path also
-appears as a clickable message. See \code{\link[cli:inline-markup]{cli::inline-markup}}.
+A character scalar containing the path to the active cache directory. The
+path is also printed as a clickable message. See \link[cli:inline-markup]{cli::inline-markup} from
+\CRANpkg{cli}.
 }
 \description{
-Detect the current cache folder. See \code{\link[=gb_set_cache_dir]{gb_set_cache_dir()}}.
+Detects the active cache directory. See \code{\link[=gb_set_cache_dir]{gb_set_cache_dir()}}.
 }
 \examples{
 gb_detect_cache_dir()
-
 }
 \seealso{
-Other cache utilities:
+Cache management functions:
 \code{\link[=gb_clear_cache]{gb_clear_cache()}},
 \code{\link[=gb_set_cache_dir]{gb_set_cache_dir()}}
 }
-\concept{cache utilities}
+\concept{cache}

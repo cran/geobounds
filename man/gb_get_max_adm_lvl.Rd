@@ -3,9 +3,9 @@
 \encoding{UTF-8}
 \name{gb_get_max_adm_lvl}
 \alias{gb_get_max_adm_lvl}
-\title{Get the highest administrative level available for a given country}
+\title{Find the highest available ADM level}
 \source{
-geoBoundaries API service \url{https://www.geoboundaries.org/api.html}.
+\href{https://www.geoboundaries.org/api.html}{\strong{geoBoundaries} API}.
 }
 \usage{
 gb_get_max_adm_lvl(
@@ -14,43 +14,46 @@ gb_get_max_adm_lvl(
 )
 }
 \arguments{
-\item{country}{A character vector of country codes. It can be either
-\code{"all"} (which returns the data for all countries), a vector of country
-names or ISO 3166-1 alpha-3 country codes. See also
-\code{\link[countrycode:countrycode]{countrycode::countrycode()}}.}
+\item{country}{A character vector of country names or ISO 3166-1 alpha-3
+country codes. Use \code{"all"} to return boundaries for all countries. See
+also \code{\link[countrycode:countrycode]{countrycode::countrycode()}} from \CRANpkg{countrycode}.}
 
-\item{release_type}{One of \code{"gbOpen"}, \code{"gbHumanitarian"} or
-\code{"gbAuthoritative"}. For most users, we suggest using \code{"gbOpen"}
-(the default), as it is CC BY 4.0 compliant and suitable for most purposes
-so long as attribution is provided. \code{"gbHumanitarian"} files are mirrored
-from \href{https://www.unocha.org/}{UN OCHA} and may have less open licensure.
-\code{"gbAuthoritative"} files are mirrored from UN SALB, verified through
-in-country processes and cannot be used for commercial purposes.}
+\item{release_type}{A character string, one of \code{"gbOpen"},
+\code{"gbHumanitarian"} or \code{"gbAuthoritative"}. For most users, use \code{"gbOpen"}
+(the default), which contains openly licensed boundaries suitable for most
+purposes when their individual license terms are followed.
+\code{"gbHumanitarian"} boundaries are mirrored from
+\href{https://www.unocha.org/}{UN OCHA} and may have additional conditions.
+\code{"gbAuthoritative"} boundaries are mirrored from
+\href{https://salb.un.org/en}{UN SALB}, verified through in-country processes
+and cannot be used for commercial purposes.}
 }
 \value{
-A \link[tibble:tbl_df]{tibble} with the country names and corresponding highest
-administrative level.
+A \link[tibble:tbl_df]{tibble} from \CRANpkg{tibble} containing ISO 3166-1
+alpha-3 country codes and their highest available ADM levels.
 }
 \description{
-Get a summary of selected or all countries and their highest administrative
-level available in geoBoundaries.
+Returns a summary of selected country codes and their highest available ADM
+level in \strong{geoBoundaries}.
 }
 \examples{
 \dontshow{if (identical(Sys.getenv("NOT_CRAN"), "true") || interactive()) withAutoprint(\{ # examplesIf}
 all <- gb_get_max_adm_lvl()
 library(dplyr)
 
-# Countries with only one level available.
+# Countries with only one ADM level available.
 all |>
   filter(maxBoundaryType == 1)
 
-# Countries with level 4 available.
+# Countries with ADM4 available.
 all |>
   filter(maxBoundaryType == 4)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-Other metadata functions:
+\code{\link[=gb_get]{gb_get()}} downloads boundaries for the available ADM levels.
+
+Metadata and licensing functions:
 \code{\link[=gb_get_metadata]{gb_get_metadata()}}
 }
-\concept{metadata functions}
+\concept{metadata}

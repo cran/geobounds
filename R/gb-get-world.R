@@ -1,29 +1,41 @@
-#' Get global composite files (CGAZ) from geoBoundaries
+#' Download global composite boundaries from **geoBoundaries**
 #'
 #' @description
-#' [Attribution](https://www.geoboundaries.org/index.html#usage) is required
-#' for all uses of this dataset.
+#' Returns global composite boundaries for the requested ADM level. Boundaries
+#' are clipped to international borders, with gaps between borders filled.
 #'
-#' This function returns global composite files for the required administrative
-#' level, clipped to international boundaries, with gaps filled between borders.
+#' CGAZ boundaries are not covered by the package's MIT license.
+#' [Attribution](https://www.geoboundaries.org/index.html#usage) is required
+#' when sharing the boundaries or derived products.
 #'
 #' @details
 #' Comprehensive Global Administrative Zones (CGAZ) are global composites for
-#' administrative boundaries. Compared with individual country files, the
-#' global product uses extensive simplification so file sizes are small enough
-#' for most desktop software, removes disputed areas and replaces them with
-#' polygons following US Department of State definitions, and fills gaps between
-#' borders.
+#' administrative boundaries. Compared with individual country boundaries,
+#' global composite boundaries use extensive simplification so file sizes are
+#' small enough for most desktop software. They remove disputed areas, replace
+#' them with polygons following United States Department of State definitions
+#' and fill gaps between borders.
 #'
-#' @inherit gb_get
+#' Follow the citation and use information included in the downloaded CGAZ
+#' archive. CGAZ and figures derived from it are not relicensed under the
+#' package's MIT license.
+#'
+#' @inherit gb_get return source references
 #' @inheritParams gb_get
-#' @param adm_lvl Type of boundary. Accepted values are administrative
-#'   levels 0, 1 and 2 (`"adm0"` is the country boundary, `"adm1"` is the
-#'   first level of subnational boundaries, `"adm2"` is the second level and
-#'   so on). Upper-case versions (`"ADM1"`) and the number of the level
-#'   (`0, 1, 2`) are also accepted.
+#' @param adm_lvl ADM level. Accepted values are levels 0, 1 and 2 (`"adm0"` is
+#'   the country boundary, `"adm1"` is the first level of subnational
+#'   boundaries and `"adm2"` is the second level). Uppercase versions
+#'   (`"ADM1"`) and level numbers (`0`, `1`, `2`) are also accepted.
 #'
-#' @family API functions
+#' @seealso
+#' - [gb_get_metadata()] inspects boundary metadata and licensing.
+#' - [gb_get_max_adm_lvl()] checks the ADM levels available for individual
+#'   country boundaries.
+#'
+#' @family api
+#'
+#' @export
+#' @encoding UTF-8
 #'
 #' @examplesIf identical(Sys.getenv("NOT_CRAN"), "true") || interactive()
 #' # This download may take some time.
@@ -35,11 +47,8 @@
 #' ggplot(world) +
 #'   geom_sf() +
 #'   coord_sf(expand = FALSE) +
-#'   labs(caption = "Source: www.geoboundaries.org")
+#'   labs(caption = "Source: geoBoundaries (CGAZ)")
 #' }
-#'
-#' @export
-#' @encoding UTF-8
 gb_get_world <- function(
   country = "all",
   adm_lvl = "adm0",
@@ -49,6 +58,11 @@ gb_get_world <- function(
 ) {
   adm_lvl <- assert_adm_lvl(adm_lvl, dict = c(paste0("adm", 0:2), 0:2))
   country <- gbnds_dev_country2iso(country)
+
+  gb_abort_if_not(
+    "{.arg overwrite} must be a {.cls logical}." = is.logical(overwrite),
+    "{.arg quiet} must be a {.cls logical}." = is.logical(quiet)
+  )
 
   # Build the CGAZ download URL.
   baseurl <- paste0(

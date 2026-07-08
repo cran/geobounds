@@ -8,38 +8,34 @@
 gb_clear_cache(config = FALSE, cached_data = TRUE, quiet = TRUE)
 }
 \arguments{
-\item{config}{Logical. If \code{TRUE}, delete the configuration folder of
-\CRANpkg{geobounds}.}
+\item{config}{A logical value. If \code{TRUE}, delete the \CRANpkg{geobounds}
+configuration directory.}
 
-\item{cached_data}{Logical. If \code{TRUE}, delete \code{cache_dir} and all its
-contents.}
+\item{cached_data}{A logical value. If \code{TRUE}, delete the active cache
+directory and all its contents.}
 
-\item{quiet}{Logical. If \code{TRUE}, suppress informational messages.}
+\item{quiet}{A logical value. If \code{TRUE}, suppress informational messages.}
 }
 \value{
-\code{\link[=invisible]{invisible()}} This function is called for its side effects.
+Invisibly returns \code{NULL}. This function is called for its side effects.
 }
 \description{
-\strong{Use this function with caution}. This function will clear your cached
-data and configuration, specifically:
-\itemize{
-\item Deletes the \CRANpkg{geobounds} config directory
-(\code{tools::R_user_dir("geobounds", "config")}).
-\item Deletes the \code{cache_dir} directory.
-\item Deletes the values stored in \code{Sys.getenv("GEOBOUNDS_CACHE_DIR")}.
-}
+\strong{Use this function with caution}. It clears cached archives and
+configuration by deleting the \CRANpkg{geobounds} configuration directory
+(\code{tools::R_user_dir("geobounds", "config")}), deleting the active cache
+directory and clearing \code{Sys.getenv("GEOBOUNDS_CACHE_DIR")}.
 }
 \details{
-This is a comprehensive reset function that resets your status as if you had
-never installed or used \CRANpkg{geobounds}.
+This reset restores the cache state of a fresh \CRANpkg{geobounds}
+installation.
 }
 \examples{
 
-# Caution! This may modify your current state.
+# Caution: this may modify your current state.
 
 \dontrun{
 my_cache <- gb_detect_cache_dir()
-# Set an example cache.
+# Set an example cache directory.
 ex <- file.path(tempdir(), "example", "cache")
 gb_set_cache_dir(ex, quiet = TRUE)
 
@@ -49,11 +45,10 @@ gb_clear_cache(quiet = FALSE)
 gb_set_cache_dir(my_cache)
 identical(my_cache, gb_detect_cache_dir())
 }
-
 }
 \seealso{
-Other cache utilities:
+Cache management functions:
 \code{\link[=gb_detect_cache_dir]{gb_detect_cache_dir()}},
 \code{\link[=gb_set_cache_dir]{gb_set_cache_dir()}}
 }
-\concept{cache utilities}
+\concept{cache}

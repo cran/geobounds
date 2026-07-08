@@ -1,32 +1,34 @@
-#' Get the highest administrative level available for a given country
+#' Find the highest available ADM level
 #'
 #' @description
-#' Get a summary of selected or all countries and their highest administrative
-#' level available in geoBoundaries.
+#' Returns a summary of selected country codes and their highest available ADM
+#' level in **geoBoundaries**.
 #'
 #' @inherit gb_get source
 #' @inheritParams gb_get_metadata
 #'
 #' @returns
-#' A [tibble][tibble::tbl_df] with the country names and corresponding highest
-#' administrative level.
+#' A [tibble][tibble::tbl_df] from \CRANpkg{tibble} containing ISO 3166-1
+#' alpha-3 country codes and their highest available ADM levels.
 #'
-#' @family metadata functions
+#' @seealso [gb_get()] downloads boundaries for the available ADM levels.
+#'
+#' @family metadata
+#'
+#' @export
+#' @encoding UTF-8
 #'
 #' @examplesIf identical(Sys.getenv("NOT_CRAN"), "true") || interactive()
 #' all <- gb_get_max_adm_lvl()
 #' library(dplyr)
 #'
-#' # Countries with only one level available.
+#' # Countries with only one ADM level available.
 #' all |>
 #'   filter(maxBoundaryType == 1)
 #'
-#' # Countries with level 4 available.
+#' # Countries with ADM4 available.
 #' all |>
 #'   filter(maxBoundaryType == 4)
-#'
-#' @export
-#' @encoding UTF-8
 gb_get_max_adm_lvl <- function(
   country = "all",
   release_type = c("gbOpen", "gbHumanitarian", "gbAuthoritative")

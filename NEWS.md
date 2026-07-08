@@ -1,8 +1,19 @@
+# geobounds 1.0.0
+
+- Changed the package software license from CC BY 4.0 to MIT and clarified that
+  downloaded boundaries and included figures retain the licenses and attribution
+  requirements of **geoBoundaries** and their original sources. Documentation
+  now distinguishes the varying `gbOpen` licenses, UN OCHA terms and the
+  non-commercial restriction on UN SALB boundaries. Downloads from
+  `gbAuthoritative` now display a licensing notice.
+- Made cache-related tests safer by isolating `GEOBOUNDS_CACHE_DIR` with
+  `withr::local_envvar()` and using test-owned temporary cache directories with
+  `withr::local_tempdir()`.
+
 # geobounds 0.1.2
 
-- Documentation and internal code were reviewed with AI assistance to improve
-  maintainability, align terminology across **roxygen2** and narrative
-  documentation, and clarify user-facing messages.
+- Improved documentation and user-facing messages to align terminology across
+  **roxygen2** and narrative documentation and clarify package output.
 
 # geobounds 0.1.1
 
@@ -15,7 +26,7 @@
 
 ## Breaking changes
 
-Functions for downloading data have been renamed to follow the convention
+Functions for downloading boundaries have been renamed to follow the convention
 `object_verb()` (see <https://devguide.ropensci.org/pkg_building.html>):
 
 - `get_gb()` -\> `gb_get()`.
@@ -30,21 +41,23 @@ instead.
 ### Other changes
 
 - Added a DOI.
-- All download functions now use `.zip/.shp` datasets instead of
-  `.geojson/.gpkg`, removing the **geojsonsf** dependency from `Imports`.
+- All download functions now use `.zip` archives containing `.shp` files instead
+  of `.geojson` or `.gpkg` files, removing the **geojsonsf** dependency from
+  `Imports`.
 - All download functions now return `MULTIPOLYGON` geometries.
-- All download functions now fail gracefully when a country file is unavailable,
-  without errors or warnings.
+- All download functions now return `NULL` without an error or warning when a
+  country file is unavailable.
 - All download functions now retry transient request failures with
   `httr2::req_retry()`.
 - Cached files from previous package versions are no longer reused because the
-  source file format changed.
+  source archive format changed.
 - Country matching now improves detection for Antarctica and Kosovo.
 - `gb_get*()` functions now allow mixed `country` argument types, such as
   `gb_get(country = c("Germany", "USA"))`.
 - `gb_get_adm5()` was added.
 - `gb_get_max_adm_lvl()` was added.
-- `gb_get_world()` now gets the latest data available from the repository at
+- `gb_get_world()` now retrieves the latest boundaries available from the
+  repository at
   <https://github.com/wmgeolab/geoBoundaries/tree/main/releaseData>.
 
 # geobounds 0.0.1

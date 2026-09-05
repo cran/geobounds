@@ -73,9 +73,10 @@ gb_get_adm5(
 country codes. Use \code{"all"} to return boundaries for all countries. See
 also \code{\link[countrycode:countrycode]{countrycode::countrycode()}} from \CRANpkg{countrycode}.}
 
-\item{simplified}{A logical value. If \code{TRUE}, return simplified boundaries.
-The default \code{FALSE} uses the primary \strong{geoBoundaries} layer. See
-simplified boundaries at \url{https://www.geoboundaries.org/}.}
+\item{simplified}{A logical value. If \code{TRUE}, return boundaries that are less
+accurate but faster to render. The default \code{FALSE} uses the primary
+\strong{geoBoundaries} layer. See the simplified boundary downloads:
+\url{https://www.geoboundaries.org/simplifiedDownloads.html}.}
 
 \item{release_type}{A character string, one of \code{"gbOpen"},
 \code{"gbHumanitarian"} or \code{"gbAuthoritative"}. For most users, use \code{"gbOpen"}
@@ -100,8 +101,8 @@ strategies in \code{\link[=gb_set_cache_dir]{gb_set_cache_dir()}}.}
 }
 \value{
 An \link[sf:st_sf]{sf} object from \CRANpkg{sf} containing the requested
-boundaries. If no boundaries match the request, the function returns
-\code{NULL}.
+boundaries. Returns \code{NULL} if no boundaries match the request or the
+downloads return no geometries.
 }
 \description{
 These functions call \code{\link[=gb_get]{gb_get()}} for a single ADM level. \code{\link[=gb_get_adm0]{gb_get_adm0()}}
@@ -115,16 +116,19 @@ Not all countries have the same number of ADM levels. Use
 \code{\link[=gb_get_max_adm_lvl]{gb_get_max_adm_lvl()}} to check availability.
 
 Boundaries downloaded through these functions are not covered by the
-package's MIT license.
-\href{https://www.geoboundaries.org/index.html#usage}{Attribution} to
-\strong{geoBoundaries} and the original sources is required when sharing the
-boundaries or derived products.
+package's MIT license. Always acknowledge \strong{geoBoundaries} when sharing the
+boundaries or derived products. See
+\url{https://www.geoboundaries.org/index.html#usage}. Consult the boundary
+metadata for any additional source attribution, license link, share-alike
+notice or modification statement required by the boundary's license.
 }
 \details{
 Each individual country boundary layer is governed by the original license
-identified in its boundary metadata. See \code{\link[=gb_get_metadata]{gb_get_metadata()}}. Users should
-cite the sources listed in the metadata and comply with any attribution,
-share-alike or non-commercial terms.
+identified in its boundary metadata. See \code{\link[=gb_get_metadata]{gb_get_metadata()}}. The
+\code{"gbOpen"} release contains multiple open licenses, including ODbL and
+CC BY-SA. Do not assume every boundary is licensed only under CC BY 4.0.
+Users should cite the sources listed in the metadata and comply with any
+attribution, share-alike or non-commercial terms.
 }
 \examples{
 \dontshow{if (identical(Sys.getenv("NOT_CRAN"), "true") || interactive()) withAutoprint(\{ # examplesIf}
@@ -155,10 +159,10 @@ administrative boundaries." \emph{PLOS ONE}, \strong{15}(4), 1--9.
 \doi{10.1371/journal.pone.0231866}.
 }
 \seealso{
-\itemize{
-\item \code{\link[=gb_get_metadata]{gb_get_metadata()}} inspects boundary metadata and licensing.
-\item \code{\link[=gb_get_max_adm_lvl]{gb_get_max_adm_lvl()}} checks available ADM levels.
-}
+\code{\link[=gb_get_metadata]{gb_get_metadata()}} inspects boundary metadata and licensing.
+\code{\link[=gb_get_max_adm_lvl]{gb_get_max_adm_lvl()}} checks the ADM levels available for individual
+country boundaries.
+\code{\link[=gb_set_cache_dir]{gb_set_cache_dir()}} configures where downloaded archives are cached.
 
 Boundary download functions:
 \code{\link[=gb_get]{gb_get()}},

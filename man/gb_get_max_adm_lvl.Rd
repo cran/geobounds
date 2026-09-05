@@ -41,7 +41,7 @@ level in \strong{geoBoundaries}.
 all <- gb_get_max_adm_lvl()
 library(dplyr)
 
-# Countries with only one ADM level available.
+# Countries whose highest available level is ADM1.
 all |>
   filter(maxBoundaryType == 1)
 
@@ -52,6 +52,7 @@ all |>
 }
 \seealso{
 \code{\link[=gb_get]{gb_get()}} downloads boundaries for the available ADM levels.
+The \link[=gb_get_adm]{ADM wrappers} request a single administrative level.
 
 Metadata and licensing functions:
 \code{\link[=gb_get_metadata]{gb_get_metadata()}}

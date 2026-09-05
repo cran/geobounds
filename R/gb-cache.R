@@ -9,18 +9,8 @@
 #' inside [base::tempdir()]. Cached archives in this directory are removed when
 #' the \R session ends. To reuse a cache directory across \R sessions, use
 #' `gb_set_cache_dir(cache_dir = "a/path/here", install = TRUE)`. This saves the
-#' directory in a configuration file under
-#' `tools::R_user_dir("geobounds", "config")`.
-#'
-#' @section Cache strategies:
-#'
-#' - For occasional use, use the default temporary cache directory.
-#' - Set the cache directory for the current session with
-#'   `gb_set_cache_dir(cache_dir = "a/path/here")`.
-#' - Save a persistent cache directory for future \R sessions with
-#'   `gb_set_cache_dir(cache_dir = "a/path/here", install = TRUE)`.
-#' - Set the cache directory for an individual download with the `cache_dir`
-#'   argument. See [gb_get()].
+#' directory in the user configuration path returned by
+#' [tools::R_user_dir()].
 #'
 #' @inheritParams gb_get
 #' @param cache_dir A path to a cache directory. If `NULL`, the function stores
@@ -34,8 +24,20 @@
 #' @returns
 #' An invisible character scalar containing the path to the cache directory.
 #'
-#' @seealso [tools::R_user_dir()] identifies standard locations for
-#'   user-specific files.
+#' @section Cache strategies:
+#'
+#' - For occasional use, use the default temporary cache directory.
+#' - Set the cache directory for the current session with
+#'   `gb_set_cache_dir(cache_dir = "a/path/here")`.
+#' - Save a persistent cache directory for future \R sessions with
+#'   `gb_set_cache_dir(cache_dir = "a/path/here", install = TRUE)`.
+#' - Set the cache directory for an individual download with the `cache_dir`
+#'   argument. See [gb_get()].
+#'
+#' @seealso
+#' [gb_get()] and [gb_get_world()] use the configured cache directory for
+#' downloaded boundary archives.
+#' [tools::R_user_dir()] identifies standard locations for user-specific files.
 #'
 #' @family cache
 #'
@@ -68,9 +70,14 @@ gb_set_cache_dir <- function(
   quiet = FALSE
 ) {
   gb_abort_if_not(
-    "{.arg quiet} must be a {.cls logical}." = is.logical(quiet),
-    "{.arg overwrite} must be a {.cls logical}." = is.logical(overwrite),
-    "{.arg install} must be a {.cls logical}." = is.logical(install)
+    "{.arg quiet} must be TRUE or FALSE." = isTRUE(quiet) ||
+      isFALSE(quiet),
+    "{.arg overwrite} must be TRUE or FALSE." = isTRUE(
+      overwrite
+    ) ||
+      isFALSE(overwrite),
+    "{.arg install} must be TRUE or FALSE." = isTRUE(install) ||
+      isFALSE(install)
   )
 
   verbose <- isFALSE(quiet)
@@ -90,18 +97,20 @@ gb_set_cache_dir <- function(
     is_temp <- FALSE
   }
 
-  # Validate `cache_dir` argument.
+  # Validate the `cache_dir` argument.
+  valid_cache_dir <- is.character(cache_dir) &&
+    length(cache_dir) == 1L &&
+    !is.na(cache_dir) &&
+    nzchar(cache_dir)
   gb_abort_if_not(
-    "{.arg cache_dir} must be a {.cls character}." = is.character(cache_dir)
+    "{.arg cache_dir} must be a non-empty string, not NA." = valid_cache_dir
   )
 
   # Expand the cache directory path.
   cache_dir <- path.expand(cache_dir)
 
   # Create the cache directory if it does not exist.
-  if (!dir.exists(cache_dir)) {
-    dir.create(cache_dir, recursive = TRUE)
-  }
+  gb_hlp_create_dir(cache_dir)
 
   if (verbose) {
     cli::cli_alert_success(
@@ -110,23 +119,20 @@ gb_set_cache_dir <- function(
   }
 
   # Save the cache directory in the user configuration.
-
   if (install) {
     config_dir <- gb_hlp_user_dir("geobounds", "config")
-    # Create the config directory if needed.
-    if (!dir.exists(config_dir)) {
-      dir.create(config_dir, recursive = TRUE)
-    }
+    # Create the configuration directory if needed.
+    gb_hlp_create_dir(config_dir, arg = "configuration directory")
 
     geobounds_file <- file.path(config_dir, "GEOBOUNDS_CACHE_DIR")
 
     if (!file.exists(geobounds_file) || overwrite) {
-      # Write the cache directory to the config file.
+      # Write the cache directory to the configuration file.
       writeLines(cache_dir, con = geobounds_file)
     } else {
       cli::cli_abort(c(
-        "A cache directory is already saved for {.arg cache_dir}.",
-        "i" = "Use {.code overwrite = TRUE} to replace it."
+        "A cache directory is already saved in the configuration file.",
+        "i" = "Set {.arg overwrite} to {.code TRUE} to replace it."
       ))
     }
   } else {
@@ -147,8 +153,6 @@ gb_set_cache_dir <- function(
 #' @description
 #' Detects the active cache directory. See [gb_set_cache_dir()].
 #'
-#' @rdname gb_detect_cache_dir
-#'
 #' @param x An object. Ignored.
 #'
 #' @returns
@@ -157,6 +161,8 @@ gb_set_cache_dir <- function(
 #' \CRANpkg{cli}.
 #'
 #' @family cache
+#'
+#' @rdname gb_detect_cache_dir
 #'
 #' @export
 #' @encoding UTF-8
@@ -176,16 +182,19 @@ gb_detect_cache_dir <- function(x = NULL) {
 #' @description
 #' **Use this function with caution**. It clears cached archives and
 #' configuration by deleting the \CRANpkg{geobounds} configuration directory
-#' (`tools::R_user_dir("geobounds", "config")`), deleting the active cache
-#' directory and clearing `Sys.getenv("GEOBOUNDS_CACHE_DIR")`.
+#' returned by [tools::R_user_dir()], deleting the active cache directory and
+#' clearing the `GEOBOUNDS_CACHE_DIR` environment variable. See
+#' [base::Sys.getenv()].
 #'
 #' @details
 #' This reset restores the cache state of a fresh \CRANpkg{geobounds}
-#' installation.
+#' installation. For safety, the function refuses to recursively delete a cache
+#' path that contains the home, working, temporary or package configuration
+#' directory. Use a dedicated cache subdirectory.
+#' Inspect the active directory with [gb_detect_cache_dir()] before clearing
+#' it. Use [gb_set_cache_dir()] to configure a cache directory again.
 #'
-#' @rdname gb_clear_cache
-#'
-#' @inheritParams gb_set_cache_dir
+#' @inheritParams gb_get quiet
 #' @param config A logical value. If `TRUE`, delete the \CRANpkg{geobounds}
 #'   configuration directory.
 #' @param cached_data A logical value. If `TRUE`, delete the active cache
@@ -195,6 +204,8 @@ gb_detect_cache_dir <- function(x = NULL) {
 #' Invisibly returns `NULL`. This function is called for its side effects.
 #'
 #' @family cache
+#'
+#' @rdname gb_clear_cache
 #'
 #' @export
 #' @encoding UTF-8
@@ -216,25 +227,37 @@ gb_detect_cache_dir <- function(x = NULL) {
 #' identical(my_cache, gb_detect_cache_dir())
 #' }
 gb_clear_cache <- function(config = FALSE, cached_data = TRUE, quiet = TRUE) {
+  gb_abort_if_not(
+    "{.arg config} must be TRUE or FALSE." = isTRUE(config) ||
+      isFALSE(config),
+    "{.arg cached_data} must be TRUE or FALSE." = isTRUE(
+      cached_data
+    ) ||
+      isFALSE(cached_data),
+    "{.arg quiet} must be TRUE or FALSE." = isTRUE(quiet) ||
+      isFALSE(quiet)
+  )
+
   verbose <- isFALSE(quiet)
 
   config_dir <- gb_hlp_user_dir("geobounds", "config")
   data_dir <- gb_hlp_detect_cache_dir()
 
   if (config && dir.exists(config_dir)) {
-    unlink(config_dir, recursive = TRUE, force = TRUE)
+    gb_hlp_delete_dir(config_dir, arg = "cache configuration")
 
     if (verbose) {
-      cli::cli_alert_warning(
+      cli::cli_alert_success(
         "Deleted the {.pkg geobounds} cache configuration."
       )
     }
   }
 
   if (cached_data && dir.exists(data_dir)) {
-    unlink(data_dir, recursive = TRUE, force = TRUE)
+    data_dir <- gb_hlp_assert_safe_cache_dir(data_dir)
+    gb_hlp_delete_dir(data_dir, arg = "cache directory")
     if (verbose) {
-      cli::cli_alert_warning(
+      cli::cli_alert_success(
         "Deleted the {.pkg geobounds} cache directory {.path {data_dir}}."
       )
     }
@@ -242,7 +265,7 @@ gb_clear_cache <- function(config = FALSE, cached_data = TRUE, quiet = TRUE) {
 
   Sys.setenv(GEOBOUNDS_CACHE_DIR = "")
 
-  # Reset the active cache directory environment variable.
+  # Reset the cache directory environment variable.
   invisible()
 }
 
@@ -264,12 +287,13 @@ gb_hlp_detect_cache_dir <- function() {
     )
 
     if (file.exists(cache_config)) {
-      cached_path <- readLines(cache_config)
+      cached_path <- readLines(cache_config, warn = FALSE)
 
-      # Fall back to the default cache when the config file is empty.
+      # Fall back when the configuration does not contain one usable path.
       if (
-        length(cached_path) == 0L ||
-          anyNA(cached_path)
+        length(cached_path) != 1L ||
+          anyNA(cached_path) ||
+          !nzchar(cached_path)
       ) {
         cache_dir <- gb_set_cache_dir(overwrite = TRUE, quiet = TRUE)
         return(cache_dir)
@@ -304,10 +328,135 @@ gb_hlp_cachedir <- function(cache_dir = NULL) {
   }
 
   # Create the cache directory if needed.
-  if (isFALSE(dir.exists(cache_dir))) {
-    dir.create(cache_dir, recursive = TRUE)
-  }
+  gb_hlp_create_dir(cache_dir)
   cache_dir
+}
+
+#' Create a directory or abort
+#'
+#' @param path A directory path.
+#' @param arg A label for the path in an error message.
+#' @param call The call to display in the error message.
+#'
+#' @returns
+#' `path`, invisibly.
+#'
+#' @noRd
+gb_hlp_create_dir <- function(
+  path,
+  arg = "cache directory",
+  call = parent.frame()
+) {
+  if (dir.exists(path)) {
+    return(invisible(path))
+  }
+
+  created <- dir.create(path, recursive = TRUE, showWarnings = FALSE)
+  if (!isTRUE(created) || !dir.exists(path)) {
+    cli::cli_abort(
+      "Cannot create the {arg} at {.path {path}}.",
+      call = call
+    )
+  }
+
+  invisible(path)
+}
+
+#' Reject cache directories that contain protected locations
+#'
+#' @param path An existing cache directory path.
+#' @param call The call to display in the error message.
+#'
+#' @returns
+#' The normalized cache directory path.
+#'
+#' @noRd
+gb_hlp_assert_safe_cache_dir <- function(path, call = parent.frame()) {
+  path <- normalizePath(path, winslash = "/", mustWork = TRUE)
+  protected <- c(
+    path.expand("~"),
+    getwd(),
+    tempdir(),
+    gb_hlp_user_dir("geobounds", "config")
+  )
+  protected <- normalizePath(protected, winslash = "/", mustWork = FALSE)
+
+  path_cmp <- gb_hlp_path_comparison(path)
+  protected_cmp <- gb_hlp_path_comparison(protected)
+
+  contains_protected <- vapply(
+    protected_cmp,
+    \(protected_path) {
+      identical(path_cmp, protected_path) ||
+        startsWith(protected_path, paste0(path_cmp, "/"))
+    },
+    logical(1)
+  )
+
+  if (any(contains_protected)) {
+    cli::cli_abort(
+      c(
+        "Refusing to recursively delete unsafe cache directory {.path {path}}.",
+        "i" = "Choose a dedicated cache subdirectory."
+      ),
+      call = call
+    )
+  }
+
+  path
+}
+
+#' Normalize paths for platform-specific comparison
+#'
+#' @param path A character vector of normalized paths.
+#' @param os_type An operating system type from [base::.Platform].
+#'
+#' @returns
+#' `path`, converted to lowercase on Windows.
+#'
+#' @noRd
+gb_hlp_path_comparison <- function(path, os_type = .Platform$OS.type) {
+  if (identical(os_type, "windows")) {
+    return(tolower(path))
+  }
+
+  path
+}
+
+#' Recursively delete a directory or abort
+#'
+#' @param path An existing directory path.
+#' @param arg A label for the directory in an error message.
+#' @param call The call to display in the error message.
+#'
+#' @returns
+#' `NULL`, invisibly.
+#'
+#' @noRd
+gb_hlp_delete_dir <- function(path, arg, call = parent.frame()) {
+  status <- gb_hlp_unlink(path, recursive = TRUE, force = TRUE)
+  if (!identical(status, 0L) || dir.exists(path)) {
+    cli::cli_abort(
+      "Cannot delete the {arg} at {.path {path}}.",
+      call = call
+    )
+  }
+
+  invisible(NULL)
+}
+
+#' Remove files or directories
+#'
+#' @param path A path to remove.
+#' @param recursive A logical value passed to [base::unlink()].
+#' @param force A logical value passed to [base::unlink()].
+#'
+#' @returns
+#' The status code returned by [base::unlink()].
+#'
+#' @noRd
+gb_hlp_unlink <- function(path, recursive, force) {
+  unlink(path, recursive = recursive, force = force)
 }
 
 #' Find the user-specific package directory

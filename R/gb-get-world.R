@@ -20,17 +20,25 @@
 #' archive. CGAZ and figures derived from it are not relicensed under the
 #' package's MIT license.
 #'
-#' @inherit gb_get return source references
 #' @inheritParams gb_get
 #' @param adm_lvl ADM level. Accepted values are levels 0, 1 and 2 (`"adm0"` is
 #'   the country boundary, `"adm1"` is the first level of subnational
 #'   boundaries and `"adm2"` is the second level). Uppercase versions
-#'   (`"ADM1"`) and level numbers (`0`, `1`, `2`) are also accepted.
+#'   (`"ADM1"`) and level numbers (`0`, `1`, `2`) are also accepted, including
+#'   numbers supplied as text (for example, `"1"`).
+#'
+#' @inherit gb_get return
+#'
+#' @source
+#' - **geoBoundaries** global downloads:
+#'   <https://www.geoboundaries.org/globalDownloads.html>.
+#' - CGAZ release files:
+#'   <https://github.com/wmgeolab/geoBoundaries/tree/main/releaseData/CGAZ>.
+#'
+#' @inherit gb_get references
 #'
 #' @seealso
-#' - [gb_get_metadata()] inspects boundary metadata and licensing.
-#' - [gb_get_max_adm_lvl()] checks the ADM levels available for individual
-#'   country boundaries.
+#' `r paste(readLines("man/chunks/seealso.md", encoding="UTF-8"),collapse="\n")`
 #'
 #' @family api
 #'
@@ -57,12 +65,23 @@ gb_get_world <- function(
   cache_dir = NULL
 ) {
   adm_lvl <- assert_adm_lvl(adm_lvl, dict = c(paste0("adm", 0:2), 0:2))
-  country <- gbnds_dev_country2iso(country)
+  valid_cache_dir <- is.null(cache_dir)
+  if (!valid_cache_dir) {
+    valid_cache_dir <- is.character(cache_dir) &&
+      length(cache_dir) == 1L &&
+      !is.na(cache_dir) &&
+      nzchar(cache_dir)
+  }
+  valid_overwrite <- isTRUE(overwrite) || isFALSE(overwrite)
+  valid_quiet <- isTRUE(quiet) || isFALSE(quiet)
 
   gb_abort_if_not(
-    "{.arg overwrite} must be a {.cls logical}." = is.logical(overwrite),
-    "{.arg quiet} must be a {.cls logical}." = is.logical(quiet)
+    "{.arg overwrite} must be TRUE or FALSE." = valid_overwrite,
+    "{.arg quiet} must be TRUE or FALSE." = valid_quiet,
+    "{.arg cache_dir} must be NULL or nonempty text, not NA." = valid_cache_dir
   )
+
+  country <- gbnds_dev_country2iso(country)
 
   # Build the CGAZ download URL.
   baseurl <- paste0(
@@ -83,6 +102,10 @@ gb_get_world <- function(
     cgaz_country = country,
     simplified = FALSE
   )
+
+  if (is.null(world) || nrow(world) == 0L) {
+    return(NULL)
+  }
 
   tokeep <- setdiff(names(world), "id")
 

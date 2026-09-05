@@ -27,11 +27,13 @@ also \code{\link[countrycode:countrycode]{countrycode::countrycode()}} from \CRA
 boundaries) or the ADM level (\code{"adm0"} is the country boundary,
 \code{"adm1"} is the first level of subnational boundaries, \code{"adm2"} is the
 second level and so on). Uppercase versions (\code{"ADM1"}) and level numbers
-(\code{0}, \code{1}, \code{2}, \code{3}, \code{4}, \code{5}) are also accepted.}
+(\code{0}, \code{1}, \code{2}, \code{3}, \code{4}, \code{5}) are also accepted, including numbers
+supplied as text (for example, \code{"1"}).}
 
-\item{simplified}{A logical value. If \code{TRUE}, return simplified boundaries.
-The default \code{FALSE} uses the primary \strong{geoBoundaries} layer. See
-simplified boundaries at \url{https://www.geoboundaries.org/}.}
+\item{simplified}{A logical value. If \code{TRUE}, return boundaries that are less
+accurate but faster to render. The default \code{FALSE} uses the primary
+\strong{geoBoundaries} layer. See the simplified boundary downloads:
+\url{https://www.geoboundaries.org/simplifiedDownloads.html}.}
 
 \item{release_type}{A character string, one of \code{"gbOpen"},
 \code{"gbHumanitarian"} or \code{"gbAuthoritative"}. For most users, use \code{"gbOpen"}
@@ -56,8 +58,8 @@ strategies in \code{\link[=gb_set_cache_dir]{gb_set_cache_dir()}}.}
 }
 \value{
 An \link[sf:st_sf]{sf} object from \CRANpkg{sf} containing the requested
-boundaries. If no boundaries match the request, the function returns
-\code{NULL}.
+boundaries. Returns \code{NULL} if no boundaries match the request or the
+downloads return no geometries.
 }
 \description{
 Returns individual country boundaries that reflect how countries represent
@@ -67,9 +69,15 @@ Use \code{\link[=gb_get_world]{gb_get_world()}} for global composite boundaries 
 disputed areas and fill gaps between borders.
 
 Boundaries downloaded through this function are not covered by the package's
-MIT license. \href{https://www.geoboundaries.org/index.html#usage}{Attribution}
-to \strong{geoBoundaries} and the original sources is required when sharing the
-boundaries or derived products.
+MIT license. Always acknowledge \strong{geoBoundaries} when sharing the boundaries
+or derived products. See \url{https://www.geoboundaries.org/index.html#usage}.
+Consult the boundary metadata for any additional source attribution, license
+link, share-alike notice or modification statement required by the boundary's
+license.
+
+The wrappers \code{\link[=gb_get_adm0]{gb_get_adm0()}}, \code{\link[=gb_get_adm1]{gb_get_adm1()}}, \code{\link[=gb_get_adm2]{gb_get_adm2()}},
+\code{\link[=gb_get_adm3]{gb_get_adm3()}}, \code{\link[=gb_get_adm4]{gb_get_adm4()}} and \code{\link[=gb_get_adm5]{gb_get_adm5()}} are also available for
+requesting a single ADM level.
 }
 \details{
 Each individual country boundary layer is governed by the original license
@@ -78,10 +86,6 @@ identified in its boundary metadata. See \code{\link[=gb_get_metadata]{gb_get_me
 CC BY-SA. Do not assume every boundary is licensed only under CC BY 4.0.
 Users should cite the sources listed in the metadata and comply with any
 attribution, share-alike or non-commercial terms.
-
-The wrappers \code{\link[=gb_get_adm0]{gb_get_adm0()}}, \code{\link[=gb_get_adm1]{gb_get_adm1()}}, \code{\link[=gb_get_adm2]{gb_get_adm2()}},
-\code{\link[=gb_get_adm3]{gb_get_adm3()}}, \code{\link[=gb_get_adm4]{gb_get_adm4()}} and \code{\link[=gb_get_adm5]{gb_get_adm5()}} are also available for
-requesting a single ADM level.
 }
 \examples{
 \dontshow{if (identical(Sys.getenv("NOT_CRAN"), "true") || interactive()) withAutoprint(\{ # examplesIf}
@@ -123,10 +127,10 @@ administrative boundaries." \emph{PLOS ONE}, \strong{15}(4), 1--9.
 \doi{10.1371/journal.pone.0231866}.
 }
 \seealso{
-\itemize{
-\item \code{\link[=gb_get_metadata]{gb_get_metadata()}} inspects boundary metadata and licensing.
-\item \code{\link[=gb_get_max_adm_lvl]{gb_get_max_adm_lvl()}} checks available ADM levels.
-}
+\code{\link[=gb_get_metadata]{gb_get_metadata()}} inspects boundary metadata and licensing.
+\code{\link[=gb_get_max_adm_lvl]{gb_get_max_adm_lvl()}} checks the ADM levels available for individual
+country boundaries.
+\code{\link[=gb_set_cache_dir]{gb_set_cache_dir()}} configures where downloaded archives are cached.
 
 Boundary download functions:
 \code{\link{gb_get_adm}},

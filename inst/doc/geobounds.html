@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.9.37">
+<meta name="generator" content="quarto-1.10.18">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -11,10 +11,13 @@
 <title>geobounds: Download administrative boundaries in R</title>
 <style>
 
-code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
-div.columns{display: flex; gap: min(4vw, 1.5em);}
-div.column{flex: auto; overflow-x: auto;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
 div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
@@ -239,16 +242,16 @@ text-decoration: underline; }
 <div class="callout-title-container flex-fill">Important</div>
 </div>
 <div class="callout-body-container callout-body">
-<p>The package code is MIT licensed. Downloaded boundaries and figures derived from them retain the licenses and attribution requirements of <strong>geoBoundaries</strong> and their original sources. Check the boundary metadata before reuse.</p>
+<p>The package code is MIT licensed. Always acknowledge <strong>geoBoundaries</strong> when sharing downloaded boundaries or derived figures. Check the boundary metadata for any additional source attribution and licensing requirements before reuse.</p>
 </div>
 </div>
 <h2 id="introduction">Introduction</h2>
-<p>The <strong>geobounds</strong> package provides an interface for downloading and working with administrative boundaries from the <a href="https://www.geoboundaries.org/"><strong>geoBoundaries</strong></a> Global Database of Political Administrative Boundaries <span class="citation" data-cites="10.1371/journal.pone.0231866">(<a href="#ref-10.1371/journal.pone.0231866" role="doc-biblioref">Runfola et al. 2020</a>)</span>.</p>
+<p>The <strong>geobounds</strong> package provides an interface for downloading and working with administrative boundaries from the Global Database of Political Administrative Boundaries, maintained by <a href="https://www.geoboundaries.org/"><strong>geoBoundaries</strong></a> <span class="citation" data-cites="10.1371/journal.pone.0231866">(<a href="#ref-10.1371/journal.pone.0231866" role="doc-biblioref">Runfola et al. 2020</a>)</span>.</p>
 <p>The default <strong>gbOpen</strong> release type covers countries worldwide across multiple ADM levels. Its boundaries use multiple open licenses, including ODbL, CC BY and CC BY-SA. The package also supports <strong>gbHumanitarian</strong> and <strong>gbAuthoritative</strong>, which differ in their sources, validation processes and licensing. With <strong>geobounds</strong>, you can download boundaries as <strong>sf</strong> objects, inspect boundary metadata, cache downloaded files and integrate boundaries into spatial workflows.</p>
-<p>This vignette keeps the main workflow in one place. It first explains how to <a href="#understanding-the-boundaries">choose the right boundary type</a>, then covers <a href="#cache-management-and-performance">cache management</a> and finishes with a <a href="#spatial-analysis-workflows">spatial analysis example</a>.</p>
+<p>This vignette keeps the main workflow in one place. It first explains how to <a href="#understanding-the-boundaries">choose a boundary type</a>, then covers <a href="#cache-management-and-performance">cache management</a> and finishes with a <a href="#spatial-analysis-workflows">spatial analysis example</a>.</p>
 <h2 id="understanding-the-boundaries">Understanding the boundaries</h2>
-<p>The <strong>geoBoundaries</strong> database is designed for scientific and academic use, with quality assurance that includes manual review and hand digitization of physical maps where necessary.</p>
-<p>This precision comes at a cost: some files can be quite large and may take longer to download. For visualization or general mapping purposes, we recommend using simplified boundaries by setting <code>simplified = TRUE</code>.</p>
+<p>The <strong>geoBoundaries</strong> database supports commercial, non-commercial and academic uses, subject to the license reported for each boundary. Its quality assurance includes manual review and hand digitization of physical maps where necessary.</p>
+<p>This precision comes at a cost: some files can be quite large and may take longer to download. For visualization or general mapping purposes, the <a href="https://www.geoboundaries.org/simplifiedDownloads.html">simplified boundaries</a> are less accurate but faster to render. Request them by setting <code>simplified = TRUE</code>.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(geobounds)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
@@ -266,7 +269,7 @@ text-decoration: underline; }
 <span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>norway_all <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(norway, norway_simp)</span>
 <span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot with ggplot2.</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot the boundaries.</span></span>
 <span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(norway_all) <span class="sc">+</span></span>
 <span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">fill =</span> <span class="st">&quot;#BA0C2F&quot;</span>, <span class="at">color =</span> <span class="st">&quot;#00205B&quot;</span>) <span class="sc">+</span></span>
 <span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="fu">vars</span>(res)) <span class="sc">+</span></span>
@@ -316,11 +319,11 @@ Map showing overlap in the disputed Kashmir area.
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    licenseSource</span>
 <span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  )</span>
 <span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 4</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   boundaryName boundaryLicense                                      boundarySource licenseSource</span></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;        &lt;chr&gt;                                                &lt;chr&gt;          &lt;chr&gt;        </span></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 India        CC0 1.0 Universal (CC0 1.0) Public Domain Dedication geoBoundaries… commons.wiki…</span></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 Pakistan     Open Data Commons Open Database License 1.0          OpenStreetMap… www.openstre…</span></span></code></pre></div>
-<p>When sharing a boundary or a derived product, attribute <strong>geoBoundaries</strong> and the original providers shown in the metadata. Include the applicable license, link to its terms and indicate modifications when required. ODbL and CC BY-SA data may impose share-alike obligations beyond attribution.</p>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   boundaryName boundaryLicense                                     boundarySource licenseSource</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;        &lt;chr&gt;                                               &lt;chr&gt;          &lt;chr&gt;        </span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 India        CC0 1.0 Universal (CC0 1.0) Public Domain Dedicati… geoBoundaries… commons.wiki…</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 Pakistan     Open Data Commons Open Database License 1.0         OpenStreetMap… www.openstre…</span></span></code></pre></div>
+<p>Always acknowledge <strong>geoBoundaries</strong> when sharing a boundary or derived product. Consult the boundary metadata for any additional source attribution, license link, share-alike notice or modification statement required by that boundary’s license. ODbL and CC BY-SA data may impose share-alike obligations beyond attribution.</p>
 <h3 id="global-composite-boundaries">Global composite boundaries</h3>
 <p>Use <code>gb_get_world()</code> for global composite boundaries that standardize disputed areas and fill gaps between borders. These boundaries are also known as Comprehensive Global Administrative Zones (CGAZ). They differ from individual country boundaries in three important ways:</p>
 <ol type="1">
@@ -356,15 +359,15 @@ Map showing no overlap in Kashmir, provided by CGAZ.
 <span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;C:\\Users\\RUNNER~1\\AppData\\Local\\Temp\\Rtmp6LfQDv&quot;</span></span>
 <span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Change to a new cache directory.</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>newdir <span class="ot">&lt;-</span> <span class="fu">file.path</span>(<span class="fu">tempdir</span>(), <span class="st">&quot;/geoboundvignette&quot;</span>)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>newdir <span class="ot">&lt;-</span> <span class="fu">file.path</span>(<span class="fu">tempdir</span>(), <span class="st">&quot;geoboundvignette&quot;</span>)</span>
 <span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="fu">gb_set_cache_dir</span>(newdir)</span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ✔ geobounds cache directory is &#39;C:\Users\RUNNER~1\AppData\Local\Temp\Rtmp6LfQDv//geoboundvignette&#39;.</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ✔ geobounds cache directory is &#39;C:\Users\RUNNER~1\AppData\Local\Temp\Rtmp6LfQDv/geoboundvignette&#39;.</span></span>
 <span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ℹ To use this cache directory in future sessions, call `gb_set_cache_dir()` with `install = TRUE`.</span></span>
 <span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Download the example data.</span></span>
 <span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>example <span class="ot">&lt;-</span> <span class="fu">gb_get_adm0</span>(<span class="st">&quot;Vatican City&quot;</span>, <span class="at">quiet =</span> <span class="cn">FALSE</span>)</span>
 <span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ℹ Downloading file from &lt;https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/VAT/ADM0/geoBoundaries-VAT-ADM0-all.zip&gt;.</span></span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; → Cache directory is &#39;C:\Users\RUNNER~1\AppData\Local\Temp\Rtmp6LfQDv//geoboundvignette/gbOpen&#39;.</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; → Cache directory is &#39;C:\Users\RUNNER~1\AppData\Local\Temp\Rtmp6LfQDv/geoboundvignette/gbOpen&#39;.</span></span>
 <span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Restore the cache directory.</span></span>
 <span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a><span class="fu">gb_set_cache_dir</span>(current)</span>
@@ -392,10 +395,10 @@ Map showing no overlap in Kashmir, provided by CGAZ.
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">glimpse</span>()</span>
 <span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Rows: 47</span></span>
 <span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Columns: 4</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ boundaryISO          &lt;chr&gt; &quot;ABW&quot;, &quot;AIA&quot;, &quot;ARG&quot;, &quot;ATG&quot;, &quot;BES&quot;, &quot;BHS&quot;, &quot;BLM&quot;, &quot;BLZ&quot;, &quot;BOL&quot;, &quot;B…</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ boundaryName         &lt;chr&gt; &quot;Aruba&quot;, &quot;Anguilla&quot;, &quot;Argentina&quot;, &quot;Antigua and Barbuda&quot;, &quot;Bonaire…</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ Continent            &lt;chr&gt; &quot;Latin America and the Caribbean&quot;, &quot;Latin America and the Caribbe…</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ worldBankIncomeGroup &lt;chr&gt; &quot;High-income Countries&quot;, &quot;No income group available&quot;, &quot;High-incom…</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ boundaryISO          &lt;chr&gt; &quot;ABW&quot;, &quot;AIA&quot;, &quot;ARG&quot;, &quot;ATG&quot;, &quot;BES&quot;, &quot;BHS&quot;, &quot;BLM&quot;, &quot;BLZ&quot;, &quot;BOL&quot;, &quot;…</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ boundaryName         &lt;chr&gt; &quot;Aruba&quot;, &quot;Anguilla&quot;, &quot;Argentina&quot;, &quot;Antigua and Barbuda&quot;, &quot;Bonair…</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ Continent            &lt;chr&gt; &quot;Latin America and the Caribbean&quot;, &quot;Latin America and the Caribb…</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; $ worldBankIncomeGroup &lt;chr&gt; &quot;High-income Countries&quot;, &quot;No income group available&quot;, &quot;High-inco…</span></span>
 <span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Adjust factors.</span></span>
 <span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>latam_meta<span class="sc">$</span>income_factor <span class="ot">&lt;-</span> <span class="fu">factor</span>(</span>

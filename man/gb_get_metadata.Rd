@@ -24,7 +24,8 @@ also \code{\link[countrycode:countrycode]{countrycode::countrycode()}} from \CRA
 boundaries) or the ADM level (\code{"adm0"} is the country boundary,
 \code{"adm1"} is the first level of subnational boundaries, \code{"adm2"} is the
 second level and so on). Uppercase versions (\code{"ADM1"}) and level numbers
-(\code{0}, \code{1}, \code{2}, \code{3}, \code{4}, \code{5}) are also accepted.}
+(\code{0}, \code{1}, \code{2}, \code{3}, \code{4}, \code{5}) are also accepted, including numbers
+supplied as text (for example, \code{"1"}).}
 
 \item{release_type}{A character string, one of \code{"gbOpen"},
 \code{"gbHumanitarian"} or \code{"gbAuthoritative"}. For most users, use \code{"gbOpen"}
@@ -59,6 +60,7 @@ format that the boundary layers represent.
 \item \code{boundaryCanonical}: The canonical name of the boundary.
 \item \code{boundarySource}: A comma-separated list of the primary sources for the
 boundary.
+\item \code{boundarySourceURL}: The URL of the original boundary source.
 \item \code{boundaryLicense}: The original license under which the primary source
 released the boundary.
 \item \code{licenseDetail}: Notes about the license.
@@ -115,7 +117,8 @@ gb_get_metadata(adm_lvl = "ADM4") |>
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=gb_get]{gb_get()}} downloads the boundaries described by the metadata.
+\code{\link[=gb_get]{gb_get()}} downloads the boundaries described by the metadata. The
+\link[=gb_get_adm]{ADM wrappers} request a single administrative level.
 
 Metadata and licensing functions:
 \code{\link[=gb_get_max_adm_lvl]{gb_get_max_adm_lvl()}}

@@ -1,10 +1,10 @@
 Package: geobounds
 Title: Download Administrative Boundary Data from 'geoBoundaries'
-Version: 1.0.0
+Version: 1.0.1
 Authors@R: c(
     person("Diego", "Hernangómez", , "diego.hernangomezherrero@gmail.com", role = c("aut", "cre", "cph"),
            comment = c(ORCID = "0000-0001-8457-4658")),
-    person("William and Mary geoLab", role = "cph",
+    person("William & Mary geoLab", role = "dtc",
            comment = c(ROR = "03hsf0573", "for the geoBoundaries project"))
   )
 Description: Provides tools to download individual country boundaries and
@@ -25,7 +25,7 @@ VignetteBuilder: quarto
 Config/Needs/website: dieghernan/gitdevr, xfun, devtools, remotes,
         reactable
 Config/roxygen2/markdown: TRUE
-Config/roxygen2/version: 8.0.0
+Config/roxygen2/version: 8.1.0
 Config/testthat/edition: 3
 Config/testthat/parallel: true
 Copyright: Package code is MIT licensed. See file COPYRIGHTS for data
@@ -35,11 +35,11 @@ Language: en-US
 X-schema.org-keywords: administrative-boundaries, api, geoboundaries,
         r, r-package, spatial-data, cran, cran-r
 NeedsCompilation: no
-Packaged: 2026-07-08 15:36:49 UTC; diego
+Packaged: 2026-09-05 18:50:51 UTC; diego
 Author: Diego Hernangómez [aut, cre, cph] (ORCID:
     <https://orcid.org/0000-0001-8457-4658>),
-  William and Mary geoLab [cph] (ROR: <https://ror.org/03hsf0573>, for
-    the geoBoundaries project)
+  William & Mary geoLab [dtc] (ROR: <https://ror.org/03hsf0573>, for the
+    geoBoundaries project)
 Maintainer: Diego Hernangómez <diego.hernangomezherrero@gmail.com>
 Repository: CRAN
-Date/Publication: 2026-07-08 16:00:08 UTC
+Date/Publication: 2026-09-05 19:00:02 UTC

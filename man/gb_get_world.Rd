@@ -6,7 +6,12 @@
 \alias{gb_get_cgaz}
 \title{Download global composite boundaries from \strong{geoBoundaries}}
 \source{
-\href{https://www.geoboundaries.org/api.html}{\strong{geoBoundaries} API}.
+\itemize{
+\item \strong{geoBoundaries} global downloads:
+\url{https://www.geoboundaries.org/globalDownloads.html}.
+\item CGAZ release files:
+\url{https://github.com/wmgeolab/geoBoundaries/tree/main/releaseData/CGAZ}.
+}
 }
 \usage{
 gb_get_world(
@@ -25,7 +30,8 @@ also \code{\link[countrycode:countrycode]{countrycode::countrycode()}} from \CRA
 \item{adm_lvl}{ADM level. Accepted values are levels 0, 1 and 2 (\code{"adm0"} is
 the country boundary, \code{"adm1"} is the first level of subnational
 boundaries and \code{"adm2"} is the second level). Uppercase versions
-(\code{"ADM1"}) and level numbers (\code{0}, \code{1}, \code{2}) are also accepted.}
+(\code{"ADM1"}) and level numbers (\code{0}, \code{1}, \code{2}) are also accepted, including
+numbers supplied as text (for example, \code{"1"}).}
 
 \item{quiet}{A logical value. If \code{TRUE}, suppress informational messages.}
 
@@ -40,8 +46,8 @@ strategies in \code{\link[=gb_set_cache_dir]{gb_set_cache_dir()}}.}
 }
 \value{
 An \link[sf:st_sf]{sf} object from \CRANpkg{sf} containing the requested
-boundaries. If no boundaries match the request, the function returns
-\code{NULL}.
+boundaries. Returns \code{NULL} if no boundaries match the request or the
+downloads return no geometries.
 }
 \description{
 Returns global composite boundaries for the requested ADM level. Boundaries
@@ -84,11 +90,10 @@ administrative boundaries." \emph{PLOS ONE}, \strong{15}(4), 1--9.
 \doi{10.1371/journal.pone.0231866}.
 }
 \seealso{
-\itemize{
-\item \code{\link[=gb_get_metadata]{gb_get_metadata()}} inspects boundary metadata and licensing.
-\item \code{\link[=gb_get_max_adm_lvl]{gb_get_max_adm_lvl()}} checks the ADM levels available for individual
+\code{\link[=gb_get_metadata]{gb_get_metadata()}} inspects boundary metadata and licensing.
+\code{\link[=gb_get_max_adm_lvl]{gb_get_max_adm_lvl()}} checks the ADM levels available for individual
 country boundaries.
-}
+\code{\link[=gb_set_cache_dir]{gb_set_cache_dir()}} configures where downloaded archives are cached.
 
 Boundary download functions:
 \code{\link[=gb_get]{gb_get()}},

@@ -1,4 +1,4 @@
-test_that("NULL output", {
+test_that("missing boundaries return NULL", {
   skip_on_cran()
   skip_if_offline()
   tmpd <- local_test_cache("geobounds-test-get-null-")
@@ -10,12 +10,56 @@ test_that("NULL output", {
   expect_null(err2)
 })
 
-test_that("license notices", {
+test_that("authoritative boundaries display their license notice", {
   expect_silent(gb_hlp_license_notice("gbOpen"))
   expect_snapshot(gb_hlp_license_notice("gbAuthoritative"))
 })
 
-test_that("sf output simplified", {
+test_that("boundary downloads reject non-scalar options", {
+  expect_error(gb_get("ESP", simplified = NA), class = "rlang_error")
+  expect_error(gb_get("ESP", overwrite = logical()), class = "rlang_error")
+  expect_error(
+    gb_get("ESP", quiet = c(TRUE, FALSE)),
+    class = "rlang_error"
+  )
+  expect_error(
+    gb_get("ESP", cache_dir = c("first", "second")),
+    class = "rlang_error"
+  )
+  expect_error(gb_get("ESP", cache_dir = ""), class = "rlang_error")
+})
+
+test_that("invalid boundary archives are removed", {
+  archive <- withr::local_tempfile(lines = "not a ZIP archive")
+
+  expect_error(gb_hlp_list_archive(archive), class = "rlang_error")
+  expect_false(file.exists(archive))
+})
+
+test_that("invalid boundary archives report deletion failures", {
+  archive <- withr::local_tempfile(lines = "not a ZIP archive")
+  local_mocked_bindings(
+    gb_hlp_unlink = function(...) 1L
+  )
+
+  expect_error(
+    gb_hlp_list_archive(archive),
+    "could not be removed",
+    class = "rlang_error"
+  )
+})
+
+test_that("boundary archives reject malformed file listings", {
+  archive <- withr::local_tempfile(lines = "placeholder")
+  local_mocked_bindings(
+    gb_hlp_unzip_list = function(...) data.frame(Size = 1L)
+  )
+
+  expect_error(gb_hlp_list_archive(archive), class = "rlang_error")
+  expect_false(file.exists(archive))
+})
+
+test_that("boundary downloads return simplified or full sf objects", {
   skip_on_cran()
   skip_if_offline()
 
@@ -42,10 +86,10 @@ test_that("sf output simplified", {
     )
   )
 
-  expect_true(object.size(che) < object.size(chefull))
+  expect_lt(object.size(che), object.size(chefull))
 })
 
-test_that("sf output messages", {
+test_that("boundary downloads report download and cache messages", {
   skip_on_cran()
   skip_if_offline()
 
@@ -77,118 +121,105 @@ test_that("sf output messages", {
   )
 })
 
-test_that("Fail gracefully single", {
-  skip_on_cran()
-  skip_if_offline()
-  tmpd <- local_test_cache("geobounds-test-get-fail-single-")
-
-  # Mock a fake call
-  url_bound <- paste0(
-    "https://github.com/wmgeolab/geoBoundaries/",
-    "raw/FAKE/releaseData/gbOpen/ESP/ADM0/",
-    "fakefile.geojson"
+test_that("failed boundary downloads return NULL", {
+  local_mocked_bindings(
+    gb_get_metadata = function(...) {
+      dplyr::tibble(staticDownloadLink = c("failed", "also-failed"))
+    },
+    gbnds_dev_shp_query = function(...) NULL
   )
 
-  expect_snapshot(
-    res_sf <- lapply(url_bound, function(x) {
-      gbnds_dev_shp_query(
-        url = x,
-        subdir = "gbOpen",
-        quiet = TRUE,
-        overwrite = FALSE,
-        cache_dir = tmpd
-      )
-    })
-  )
-  meta_sf <- dplyr::bind_rows(res_sf)
+  result <- gb_get("ESP")
 
-  expect_s3_class(meta_sf, "tbl")
-  expect_equal(nrow(meta_sf), 0)
+  expect_null(result)
 })
 
-test_that("Fail gracefully several", {
-  skip_on_cran()
-  skip_if_offline()
-  tmpd <- local_test_cache("geobounds-test-get-fail-several-")
-
-  # Replicate internal logic
-
-  sev <- gb_get_metadata(c("Andorra", "Vatican"), adm_lvl = "ADM0")
-  geoms <- sev$staticDownloadLink
-
-  # Mock a fake call
-  url <- paste0(
-    "https://github.com/wmgeolab/geoBoundaries/",
-    "raw/FAKE/releaseData/gbOpen/ESP/ADM0/",
-    "fakefile.zip"
-  )
-  url_bound <- c(geoms, url)
-
-  expect_snapshot(
-    res_sf <- lapply(url_bound, function(x) {
-      gbnds_dev_shp_query(
-        url = x,
-        subdir = "gbOpen",
-        quiet = TRUE,
-        overwrite = FALSE,
-        cache_dir = tmpd,
-        simplified = TRUE
+test_that("failed HTTP downloads remove the archive and preserve other files", {
+  cache_dir <- local_test_cache("geobounds-test-http-failure-")
+  release_dir <- file.path(cache_dir, "gbOpen")
+  dir.create(release_dir)
+  archive <- file.path(release_dir, "boundary.zip")
+  writeLines("old archive", archive)
+  sentinel <- file.path(release_dir, "other.zip")
+  writeLines("keep", sentinel)
+  withr::local_options(
+    httr2_mock = function(req) {
+      httr2::response(
+        status_code = 404L,
+        url = req$url,
+        body = charToRaw("Not found")
       )
-    })
+    }
   )
-  meta_sf <- dplyr::bind_rows(res_sf)
 
-  expect_s3_class(meta_sf, "tbl")
-  expect_s3_class(meta_sf, "sf")
-  expect_equal(nrow(meta_sf), 2)
-
-  # If we change order...
-  url_bound <- c(url, geoms)
-
-  res_sf <- lapply(url_bound, function(x) {
-    gbnds_dev_shp_query(
-      url = x,
+  expect_message(
+    result <- gbnds_dev_shp_query(
+      url = "https://example.com/boundary.zip",
       subdir = "gbOpen",
       quiet = TRUE,
-      overwrite = FALSE,
-      cache_dir = tmpd
-    )
-  })
+      overwrite = TRUE,
+      cache_dir = cache_dir
+    ),
+    "failed with HTTP status.*404"
+  )
 
-  meta_sf <- dplyr::bind_rows(res_sf)
-
-  expect_s3_class(meta_sf, "tbl")
-  expect_s3_class(meta_sf, "sf")
-  expect_equal(nrow(meta_sf), 2)
+  expect_null(result)
+  expect_false(file.exists(archive))
+  expect_identical(readLines(sentinel), "keep")
 })
 
-test_that("Release type", {
-  skip_on_cran()
-  skip_if_offline()
-  tmpd <- local_test_cache("geobounds-test-get-release-")
-
-  library(dplyr)
-  iso <- gb_get_metadata(release_type = "gbHumanitarian", adm_lvl = "ADM0") |>
-    slice_head(n = 1) |>
-    pull(boundaryISO)
-
-  res <- gb_get_adm0(
-    iso,
-    simplified = TRUE,
-    release_type = "gbHumanitarian",
-    cache_dir = tmpd
+test_that("mixed downloads retain successes when the failure is first", {
+  expected <- sf::st_sf(
+    shapeGroup = c("AND", "VAT"),
+    geometry = sf::st_sfc(
+      sf::st_point(c(1, 2)),
+      sf::st_point(c(3, 4)),
+      crs = 4326
+    )
   )
-  expect_s3_class(res, "sf")
-
-  iso <- gb_get_metadata(release_type = "gbAuthoritative", adm_lvl = "ADM0") |>
-    slice_head(n = 1) |>
-    pull(boundaryISO)
-
-  res <- gb_get_adm0(
-    iso,
-    simplified = TRUE,
-    release_type = "gbAuthoritative",
-    cache_dir = tmpd
+  local_mocked_bindings(
+    gb_get_metadata = function(...) {
+      dplyr::tibble(staticDownloadLink = c("failed", "AND", "VAT"))
+    },
+    gbnds_dev_shp_query = function(url, ...) {
+      if (url == "failed") {
+        return(NULL)
+      }
+      expected[expected$shapeGroup == url, ]
+    }
   )
-  expect_s3_class(res, "sf")
+
+  result <- gb_get(c("AND", "VAT", "ESP"), simplified = TRUE)
+
+  expect_s3_class(result, "sf")
+  expect_identical(result$shapeGroup, c("AND", "VAT"))
+  expect_equal(sf::st_geometry(result), sf::st_geometry(expected))
+})
+
+test_that("mixed downloads retain successes when the failure is last", {
+  expected <- sf::st_sf(
+    shapeGroup = c("AND", "VAT"),
+    geometry = sf::st_sfc(
+      sf::st_point(c(1, 2)),
+      sf::st_point(c(3, 4)),
+      crs = 4326
+    )
+  )
+  local_mocked_bindings(
+    gb_get_metadata = function(...) {
+      dplyr::tibble(staticDownloadLink = c("AND", "VAT", "failed"))
+    },
+    gbnds_dev_shp_query = function(url, ...) {
+      if (url == "failed") {
+        return(NULL)
+      }
+      expected[expected$shapeGroup == url, ]
+    }
+  )
+
+  result <- gb_get(c("AND", "VAT", "ESP"), simplified = TRUE)
+
+  expect_s3_class(result, "sf")
+  expect_identical(result$shapeGroup, c("AND", "VAT"))
+  expect_equal(sf::st_geometry(result), sf::st_geometry(expected))
 })

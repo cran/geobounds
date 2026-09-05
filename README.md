@@ -67,7 +67,7 @@ pak::pak("dieghernan/geobounds")
 ```
 
 Alternatively, you can install **geobounds** from
-[R-universe](https://dieghernan.r-universe.dev/geobounds):
+[**r-universe**](https://dieghernan.r-universe.dev/geobounds):
 
 ``` r
 # Install geobounds.
@@ -124,8 +124,8 @@ sources, validation processes and licensing terms:
   current metadata for the applicable source, license and attribution
   terms.
 - **gbAuthoritative**: Boundaries mirrored from UN SALB and verified
-  through in-country processes. These boundaries cannot be used for
-  commercial purposes.
+  through in-country processes. These boundaries are restricted to
+  non-commercial use.
 
 Use the `release_type` argument to request a specific release type, for
 example, `gb_get_adm1("Sri Lanka", release_type = "gbHumanitarian")`.
@@ -197,7 +197,7 @@ alt="Highest available gbOpen ADM level by country." />
 - Read the original paper describing the **geoBoundaries** dataset
   ([Runfola et al. 2020](#ref-10.1371/journal.pone.0231866)).
 - Report issues or contribute on
-  [GitHub](https://github.com/dieghernan/geobounds).
+  [**GitHub**](https://github.com/dieghernan/geobounds).
 
 ## License
 
@@ -209,9 +209,10 @@ those boundaries.
 Each boundary retains the original license reported by
 **geoBoundaries**. Before reusing or redistributing boundaries, use
 `gb_get_metadata()` to check `boundaryLicense`, `licenseDetail`,
-`licenseSource`, `boundarySource` and `boundarySourceURL`. Attribute
-**geoBoundaries** and the original providers, include the applicable
-license and indicate modifications when required. `gbAuthoritative`
+`licenseSource`, `boundarySource` and `boundarySourceURL`. Always
+acknowledge **geoBoundaries**. Consult these fields for any additional
+source attribution, license link, share-alike notice or modification
+statement required by the boundary’s license. **gbAuthoritative**
 contains UN SALB boundaries restricted to non-commercial use.
 
 ## Acknowledgments
@@ -234,13 +235,13 @@ Data from geoBoundaries</em>.
 <a href="https://dieghernan.github.io/geobounds/">https://dieghernan.github.io/geobounds/</a>.
 </p>
 
-A BibTeX entry for LaTeX users:
+A **BibTeX** entry for **LaTeX** users:
 
     @Manual{R-geobounds,
       title = {{geobounds}: Download Administrative Boundary Data from geoBoundaries},
       author = {Diego Hernangómez},
       year = {2026},
-      version = {1.0.0},
+      version = {1.0.1},
       url = {https://dieghernan.github.io/geobounds/},
       abstract = {Provides tools to download individual country boundaries and global composite boundaries from geoBoundaries <https://www.geoboundaries.org/> across multiple administrative (ADM) levels. Returns boundaries as sf objects for mapping and spatial analysis. Runfola et al. (2020) <doi:10.1371/journal.pone.0231866> describe the underlying database.},
       doi = {10.32614/CRAN.package.geobounds},

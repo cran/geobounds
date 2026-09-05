@@ -8,9 +8,15 @@
 #' disputed areas and fill gaps between borders.
 #'
 #' Boundaries downloaded through this function are not covered by the package's
-#' MIT license. [Attribution](https://www.geoboundaries.org/index.html#usage)
-#' to **geoBoundaries** and the original sources is required when sharing the
-#' boundaries or derived products.
+#' MIT license. Always acknowledge **geoBoundaries** when sharing the boundaries
+#' or derived products. See <https://www.geoboundaries.org/index.html#usage>.
+#' Consult the boundary metadata for any additional source attribution, license
+#' link, share-alike notice or modification statement required by the boundary's
+#' license.
+#'
+#' The wrappers [gb_get_adm0()], [gb_get_adm1()], [gb_get_adm2()],
+#' [gb_get_adm3()], [gb_get_adm4()] and [gb_get_adm5()] are also available for
+#' requesting a single ADM level.
 #'
 #' @details
 #' Each individual country boundary layer is governed by the original license
@@ -20,10 +26,6 @@
 #' Users should cite the sources listed in the metadata and comply with any
 #' attribution, share-alike or non-commercial terms.
 #'
-#' The wrappers [gb_get_adm0()], [gb_get_adm1()], [gb_get_adm2()],
-#' [gb_get_adm3()], [gb_get_adm4()] and [gb_get_adm5()] are also available for
-#' requesting a single ADM level.
-#'
 #' @param country A character vector of country names or ISO 3166-1 alpha-3
 #'   country codes. Use `"all"` to return boundaries for all countries. See
 #'   also [countrycode::countrycode()] from \CRANpkg{countrycode}.
@@ -31,10 +33,12 @@
 #'   boundaries) or the ADM level (`"adm0"` is the country boundary,
 #'   `"adm1"` is the first level of subnational boundaries, `"adm2"` is the
 #'   second level and so on). Uppercase versions (`"ADM1"`) and level numbers
-#'   (`0`, `1`, `2`, `3`, `4`, `5`) are also accepted.
-#' @param simplified A logical value. If `TRUE`, return simplified boundaries.
-#'   The default `FALSE` uses the primary **geoBoundaries** layer. See
-#'   simplified boundaries at <https://www.geoboundaries.org/>.
+#'   (`0`, `1`, `2`, `3`, `4`, `5`) are also accepted, including numbers
+#'   supplied as text (for example, `"1"`).
+#' @param simplified A logical value. If `TRUE`, return boundaries that are less
+#'   accurate but faster to render. The default `FALSE` uses the primary
+#'   **geoBoundaries** layer. See the simplified boundary downloads:
+#'   <https://www.geoboundaries.org/simplifiedDownloads.html>.
 #' @param release_type A character string, one of `"gbOpen"`,
 #'   `"gbHumanitarian"` or `"gbAuthoritative"`. For most users, use `"gbOpen"`
 #'   (the default), which contains openly licensed boundaries suitable for most
@@ -55,8 +59,8 @@
 #'
 #' @returns
 #' An [sf][sf::st_sf] object from \CRANpkg{sf} containing the requested
-#' boundaries. If no boundaries match the request, the function returns
-#' `NULL`.
+#' boundaries. Returns `NULL` if no boundaries match the request or the
+#' downloads return no geometries.
 #'
 #' @source
 #' [**geoBoundaries** API](https://www.geoboundaries.org/api.html).
@@ -67,8 +71,7 @@
 #' \doi{10.1371/journal.pone.0231866}.
 #'
 #' @seealso
-#' - [gb_get_metadata()] inspects boundary metadata and licensing.
-#' - [gb_get_max_adm_lvl()] checks available ADM levels.
+#' `r paste(readLines("man/chunks/seealso.md", encoding="UTF-8"),collapse="\n")`
 #'
 #' @family api
 #'
@@ -118,15 +121,26 @@ gb_get <- function(
   # Prepare input parameters.
   source <- match_arg_pretty(release_type)
   adm_lvl <- assert_adm_lvl(adm_lvl)
-  country <- gbnds_dev_country2iso(country)
-
-  gb_hlp_license_notice(source)
+  valid_cache_dir <- is.null(cache_dir)
+  if (!valid_cache_dir) {
+    valid_cache_dir <- is.character(cache_dir) &&
+      length(cache_dir) == 1L &&
+      !is.na(cache_dir) &&
+      nzchar(cache_dir)
+  }
+  valid_simplified <- isTRUE(simplified) || isFALSE(simplified)
+  valid_overwrite <- isTRUE(overwrite) || isFALSE(overwrite)
+  valid_quiet <- isTRUE(quiet) || isFALSE(quiet)
 
   gb_abort_if_not(
-    "{.arg simplified} must be a {.cls logical}." = is.logical(simplified),
-    "{.arg overwrite} must be a {.cls logical}." = is.logical(overwrite),
-    "{.arg quiet} must be a {.cls logical}." = is.logical(quiet)
+    "{.arg simplified} must be TRUE or FALSE." = valid_simplified,
+    "{.arg overwrite} must be TRUE or FALSE." = valid_overwrite,
+    "{.arg quiet} must be TRUE or FALSE." = valid_quiet,
+    "{.arg cache_dir} must be NULL or nonempty text, not NA." = valid_cache_dir
   )
+
+  country <- gbnds_dev_country2iso(country)
+  gb_hlp_license_notice(source)
 
   meta_df <- gb_get_metadata(
     country = country,
@@ -135,7 +149,7 @@ gb_get <- function(
   )
 
   if (nrow(meta_df) == 0) {
-    cli::cli_alert_danger(
+    cli::cli_alert_warning(
       "No matching boundaries found. Returning {.code NULL}."
     )
     return(NULL)
@@ -156,6 +170,9 @@ gb_get <- function(
   })
 
   meta_sf <- dplyr::bind_rows(res_sf)
+  if (nrow(meta_sf) == 0L) {
+    return(NULL)
+  }
 
   meta_sf
 }
@@ -232,7 +249,7 @@ gbnds_dev_shp_query <- function(
     # Download the source archive.
     if (!quiet) {
       cli::cli_alert_info("Downloading source archive from {.url {url}}.")
-      cli::cli_alert("Cache directory is {.path {path}}.")
+      cli::cli_alert_info("Cache directory is {.path {path}}.")
     }
 
     q <- gb_hlp_request(url, quiet = quiet)
@@ -248,7 +265,7 @@ gbnds_dev_shp_query <- function(
   }
 
   # Select the requested shapefile from the archive.
-  shp_zip <- unzip(file_local, list = TRUE)
+  shp_zip <- gb_hlp_list_archive(file_local)
   shp_end <- gb_hlp_select_shapefile(shp_zip$Name, simplified = simplified)
 
   # Read through GDAL's `/vsizip/` virtual file system.
@@ -259,5 +276,63 @@ gbnds_dev_shp_query <- function(
   if (subdir == "CGAZ" && !("ALL" %in% cgaz_country)) {
     outsf <- outsf[outsf$shapeGroup %in% cgaz_country, ]
   }
-  outsf <- gbnds_dev_sf_helper(outsf)
+  gbnds_dev_sf_helper(outsf)
+}
+
+#' List a boundary archive or remove it when invalid
+#'
+#' @param path A path to a ZIP archive.
+#' @param call The call to display in the error message.
+#'
+#' @returns
+#' A data frame describing the files in the archive.
+#'
+#' @noRd
+gb_hlp_list_archive <- function(path, call = parent.frame()) {
+  invalid_archive <- function(cnd = NULL) {
+    status <- gb_hlp_unlink(path, recursive = FALSE, force = TRUE)
+    if (!identical(status, 0L) || file.exists(path)) {
+      cli::cli_abort(
+        c(
+          "Invalid boundary archive {.file {path}} could not be removed.",
+          "i" = "Delete the file manually before retrying the request."
+        ),
+        call = call,
+        parent = cnd
+      )
+    }
+
+    cli::cli_abort(
+      c(
+        "Boundary archive {.file {path}} is invalid and was removed.",
+        "i" = "Retry the request to download a fresh copy."
+      ),
+      call = call,
+      parent = cnd
+    )
+  }
+
+  archive <- tryCatch(
+    gb_hlp_unzip_list(path),
+    error = invalid_archive,
+    warning = invalid_archive
+  )
+
+  if (!is.data.frame(archive) || !("Name" %in% names(archive))) {
+    invalid_archive()
+  }
+
+  archive
+}
+
+#' List files in a ZIP archive
+#'
+#' @param path A path to a ZIP archive.
+#'
+#' @returns
+#' A data frame describing the files in the archive.
+#'
+#' @noRd
+gb_hlp_unzip_list <- function(path) {
+  unzip(path, list = TRUE)
 }

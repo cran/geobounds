@@ -22,12 +22,17 @@ Invisibly returns \code{NULL}. This function is called for its side effects.
 \description{
 \strong{Use this function with caution}. It clears cached archives and
 configuration by deleting the \CRANpkg{geobounds} configuration directory
-(\code{tools::R_user_dir("geobounds", "config")}), deleting the active cache
-directory and clearing \code{Sys.getenv("GEOBOUNDS_CACHE_DIR")}.
+returned by \code{\link[tools:R_user_dir]{tools::R_user_dir()}}, deleting the active cache directory and
+clearing the \code{GEOBOUNDS_CACHE_DIR} environment variable. See
+\code{\link[base:Sys.getenv]{base::Sys.getenv()}}.
 }
 \details{
 This reset restores the cache state of a fresh \CRANpkg{geobounds}
-installation.
+installation. For safety, the function refuses to recursively delete a cache
+path that contains the home, working, temporary or package configuration
+directory. Use a dedicated cache subdirectory.
+Inspect the active directory with \code{\link[=gb_detect_cache_dir]{gb_detect_cache_dir()}} before clearing
+it. Use \code{\link[=gb_set_cache_dir]{gb_set_cache_dir()}} to configure a cache directory again.
 }
 \examples{
 

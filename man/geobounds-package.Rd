@@ -6,6 +6,9 @@
 \alias{geobounds}
 \alias{geobounds-package}
 \title{geobounds: Download Administrative Boundary Data from 'geoBoundaries'}
+\source{
+\href{https://www.geoboundaries.org/api.html}{\strong{geoBoundaries} API}.
+}
 \description{
 \if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
 
@@ -35,7 +38,7 @@ Authors:
 
 Other contributors:
 \itemize{
-  \item William and Mary geoLab (\href{https://ror.org/03hsf0573}{ROR}) (for the geoBoundaries project) [copyright holder]
+  \item William & Mary geoLab (\href{https://ror.org/03hsf0573}{ROR}) (for the geoBoundaries project) [data contributor]
 }
 
 }

@@ -1,29 +1,12 @@
-test_that("Utils names", {
+test_that("country names and ISO codes are normalized to ISO3 codes", {
   expect_snapshot(gbnds_dev_country2iso(c("Espagne", "United Kingdom")))
-  expect_error(gbnds_dev_country2iso("UA"))
-  expect_snapshot(gbnds_dev_country2iso(c("ESP", "POR", "RTA", "USA")))
   expect_snapshot(gbnds_dev_country2iso(c("ESP", "Alemania")))
-
-  expect_identical(
-    gbnds_dev_country2iso(c("ESP", "POR", "RTA", "USA", "all")),
-    "ALL"
-  )
 })
 
-test_that("Problematic names", {
-  skip_on_cran()
-  skip_if_offline()
-  tmpd <- local_test_cache("geobounds-test-utils-names-")
-
-  expect_snapshot(gbnds_dev_country2iso(c("Espagne", "Antartica")))
-  expect_snapshot(gbnds_dev_country2iso(c("spain", "antartica")))
-
-  ata <- gb_get_adm0("Antartica", simplified = TRUE, cache_dir = tmpd)
-  expect_s3_class(ata, "sf")
-
-  # Special case for Kosovo
-  expect_snapshot(gbnds_dev_country2iso(c("Spain", "Kosovo", "Antartica")))
-  expect_snapshot(gbnds_dev_country2iso(c("ESP", "XKX", "DEU")))
+test_that("invalid country identifiers are rejected or omitted", {
+  expect_snapshot(gbnds_dev_country2iso("UA"), error = TRUE)
+  expect_snapshot(gbnds_dev_country2iso(c("ESP", "POR")))
+  expect_snapshot(gbnds_dev_country2iso(c("ESP", "POR", "RTA", "USA")))
   expect_snapshot(gbnds_dev_country2iso(c(
     "Spain",
     "Rea",
@@ -31,9 +14,50 @@ test_that("Problematic names", {
     "Antartica",
     "Murcua"
   )))
+})
 
+test_that("country identifiers must contain usable text", {
+  expect_error(gbnds_dev_country2iso(NA_character_), class = "rlang_error")
+  expect_error(gbnds_dev_country2iso(character()), class = "rlang_error")
+  expect_error(gbnds_dev_country2iso("  "), class = "rlang_error")
+  expect_error(gbnds_dev_country2iso(123), class = "rlang_error")
+})
+
+test_that("Kosovo aliases require exact matches", {
+  expect_error(gbnds_dev_country2iso("NotKosovo"), class = "rlang_error")
+  expect_error(gbnds_dev_country2iso("XKX-invalid"), class = "rlang_error")
+})
+
+test_that("country identifiers error when every value is unmatched", {
+  expect_error(
+    gbnds_dev_country2iso(c("Murcua", "NotKosovo")),
+    class = "rlang_error"
+  )
+})
+
+test_that("ALL selects all countries", {
+  expect_identical(
+    gbnds_dev_country2iso(c("ESP", "POR", "RTA", "USA", "all")),
+    "ALL"
+  )
+})
+
+test_that("Antarctica misspellings and Kosovo aliases are normalized", {
+  expect_snapshot(gbnds_dev_country2iso(c("Espagne", "Antartica")))
+  expect_snapshot(gbnds_dev_country2iso(c("spain", "antartica")))
+  expect_snapshot(gbnds_dev_country2iso(c("Spain", "Kosovo", "Antartica")))
+  expect_snapshot(gbnds_dev_country2iso(c("ESP", "XKX", "DEU")))
   expect_snapshot(gbnds_dev_country2iso("Kosovo"))
   expect_snapshot(gbnds_dev_country2iso("XKX"))
+})
+
+test_that("Antarctica and Kosovo boundaries can be downloaded", {
+  skip_on_cran()
+  skip_if_offline()
+  tmpd <- local_test_cache("geobounds-test-utils-names-")
+
+  ata <- gb_get_adm0("Antartica", simplified = TRUE, cache_dir = tmpd)
+  expect_s3_class(ata, "sf")
 
   kos <- gb_get_adm0("Kosovo", simplified = TRUE, cache_dir = tmpd)
   expect_s3_class(kos, "sf")
@@ -48,7 +72,7 @@ test_that("Problematic names", {
   expect_equal(nrow(full), 2)
 })
 
-test_that("Test full name conversion", {
+test_that("all metadata country names and codes can be converted", {
   skip_on_cran()
   skip_if_offline()
 
@@ -57,11 +81,11 @@ test_that("Test full name conversion", {
   expect_silent(nm2 <- gbnds_dev_country2iso(nm))
   isos <- unique(allnames$boundaryISO)
   expect_silent(isos2 <- gbnds_dev_country2iso(isos))
-  expect_identical(length(nm), length(isos2))
-  expect_identical(length(nm), length(nm2))
+  expect_setequal(nm2, isos)
+  expect_setequal(isos2, isos)
 })
 
-test_that("Test mixed countries", {
+test_that("mixed country names and codes can be downloaded", {
   skip_on_cran()
   skip_if_offline()
   tmpd <- local_test_cache("geobounds-test-utils-mixed-")
@@ -76,7 +100,7 @@ test_that("Test mixed countries", {
   expect_s3_class(cnt, "sf")
 })
 
-test_that("Assert admin levels", {
+test_that("ADM validation accepts valid and rejects invalid values", {
   expect_snapshot(assert_adm_lvl(1:2), error = TRUE)
 
   expect_snapshot(assert_adm_lvl(adm_lvl = 10), error = TRUE)
@@ -101,18 +125,22 @@ test_that("Assert admin levels", {
   expect_identical(vec_integers, paste0("ADM", 0:5))
 })
 
-test_that("Internal helpers clean and parse common API values", {
+test_that("unique value helper removes duplicates and missing values", {
   expect_identical(
     gb_hlp_unique_values(c("a", "a", NA_character_, "b")),
     c("a", "b")
   )
+})
 
+test_that("numeric helper converts only matching columns", {
   tb <- dplyr::tibble(one = "1", two = "2", three = "three")
   out <- gb_hlp_as_numeric(tb, c("one", "two", "missing"))
   expect_identical(out$one, 1)
   expect_identical(out$two, 2)
   expect_identical(out$three, "three")
+})
 
+test_that("API date-time helper parses values in GMT", {
   api_datetime <- "Mon Jan 02 03:04:05 2023"
   parsed_datetime <- gb_hlp_parse_api_datetime(api_datetime)
   expect_s3_class(parsed_datetime, "POSIXlt")
@@ -120,11 +148,13 @@ test_that("Internal helpers clean and parse common API values", {
     strftime(parsed_datetime, "%Y-%m-%d %H:%M:%S", tz = "GMT"),
     "2023-01-02 03:04:05"
   )
+})
 
+test_that("API date helper parses values", {
   expect_identical(gb_hlp_parse_api_date("Jan 02, 2023"), as.Date("2023-01-02"))
 })
 
-test_that("Internal HTTP helpers format requests and errors", {
+test_that("internal HTTP helpers format requests and HTTP errors", {
   req <- gb_hlp_request("https://example.com/data.zip", quiet = FALSE)
   expect_s3_class(req, "httr2_request")
 
@@ -140,7 +170,7 @@ test_that("Internal HTTP helpers format requests and errors", {
   )
 })
 
-test_that("Internal shapefile selection respects simplified files", {
+test_that("shapefile selection respects the simplified option", {
   shp_files <- c(
     "folder/source.shp",
     "folder/source.dbf",
@@ -157,66 +187,102 @@ test_that("Internal shapefile selection respects simplified files", {
   )
 })
 
-test_that("UTF-8", {
+test_that("shapefile selection accepts uppercase extensions", {
+  expect_identical(
+    gb_hlp_select_shapefile("folder/source.SHP"),
+    "folder/source.SHP"
+  )
+})
+
+test_that("shapefile selection requires exactly one matching file", {
+  expect_error(
+    gb_hlp_select_shapefile("folder/source.dbf"),
+    class = "rlang_error"
+  )
+  expect_error(
+    gb_hlp_select_shapefile(c("folder/first.shp", "folder/second.shp")),
+    class = "rlang_error"
+  )
+  expect_error(
+    gb_hlp_select_shapefile("folder/source.shp", simplified = TRUE),
+    class = "rlang_error"
+  )
+})
+
+test_that("downloaded boundary names use UTF-8 encoding", {
   skip_on_cran()
   skip_if_offline()
   tmpd <- local_test_cache("geobounds-test-utils-utf8-")
 
   ff <- gb_get("CZE", "ADM1", simplified = TRUE, cache_dir = tmpd)
-  expect_true(all(Encoding(ff$shapeName) == "UTF-8"))
+  expect_identical(unique(Encoding(ff$shapeName)), "UTF-8")
 })
 
-test_that("Pretty match", {
+test_that("argument matching returns exact values and defaults", {
   my_fun <- function(arg_one = c(10, 1000, 3000, 5000)) {
     match_arg_pretty(arg_one)
   }
 
-  # OK, returns character
   expect_identical(my_fun(1000), "1000")
   expect_identical(my_fun("1000"), "1000")
   expect_identical(my_fun(NULL), "10")
   expect_identical(my_fun(), "10")
-  # Some errors here
-  # Single value no match
+
+  my_fun2 <- function(an_arg = 20) {
+    match_arg_pretty(an_arg, c("30", "20"))
+  }
+  expect_identical(my_fun2(), "20")
+})
+
+test_that("argument matching reports invalid values and suggestions", {
+  my_fun <- function(arg_one = c(10, 1000, 3000, 5000)) {
+    match_arg_pretty(arg_one)
+  }
+
   expect_snapshot(my_fun("error here"), error = TRUE)
-
-  # Several values no match
   expect_snapshot(my_fun(c("an", "error")), error = TRUE)
-
-  # One value regex
   expect_snapshot(my_fun("5"), error = TRUE)
-  # Several value regex
   expect_snapshot(my_fun("00"), error = TRUE)
 
   my_fun2 <- function(year = 20) {
     match_arg_pretty(year)
   }
 
-  # Pass more options than expected
   expect_snapshot(my_fun2(c(1, 2)), error = TRUE)
 
-  # With custom options
   my_fun3 <- function(an_arg = 20) {
     match_arg_pretty(an_arg, c("30", "20"))
   }
-  expect_identical(my_fun3(), "20")
   expect_snapshot(my_fun3("3"), error = TRUE)
-  # Pass more options than expected
-  expect_snapshot(my_fun2(c(1, 2)), error = TRUE)
 })
 
-test_that("Test gb_abort_if_not", {
+test_that("gb_abort_if_not accepts empty and true conditions", {
   expect_invisible(gb_abort_if_not())
-  expect_snapshot(error = TRUE, gb_abort_if_not(isFALSE(TRUE)))
   expect_invisible(gb_abort_if_not("A" = is.character("a")))
+})
 
+test_that("gb_abort_if_not rejects unnamed conditions", {
+  expect_snapshot(error = TRUE, gb_abort_if_not(isFALSE(TRUE)))
+})
+
+test_that("gb_abort_if_not reports the first false condition", {
+  expect_snapshot(
+    error = TRUE,
+    gb_abort_if_not(
+      "First condition failed." = FALSE,
+      "Second condition failed." = FALSE
+    )
+  )
+})
+
+test_that("cache setup rejects invalid argument types", {
   expect_snapshot(error = TRUE, gb_set_cache_dir(cache_dir = 34))
   expect_snapshot(error = TRUE, gb_set_cache_dir(overwrite = "a"))
   expect_snapshot(error = TRUE, gb_set_cache_dir(install = "a"))
   expect_snapshot(error = TRUE, gb_set_cache_dir(quiet = "a"))
 })
 
-test_that("gbnds_dev_sf_helper casts to MULTIPOLYGON", {
+test_that("sf helper casts polygon geometries to multipolygons", {
   skip_if_not_installed("sf")
 
   poly <- sf::st_polygon(list(rbind(
@@ -232,5 +298,63 @@ test_that("gbnds_dev_sf_helper casts to MULTIPOLYGON", {
   out <- gbnds_dev_sf_helper(data_sf)
 
   expect_s3_class(out, "sf")
-  expect_true(all(sf::st_geometry_type(out) == "MULTIPOLYGON"))
+  expect_identical(
+    unique(as.character(sf::st_geometry_type(out))),
+    "MULTIPOLYGON"
+  )
+})
+
+test_that("sf standardization preserves text, attributes and geometry", {
+  polygon <- sf::st_polygon(list(rbind(
+    c(0, 0),
+    c(1, 0),
+    c(1, 1),
+    c(0, 1),
+    c(0, 0)
+  )))
+  input <- sf::st_sf(
+    name = "Hernang\u00f3mez",
+    population = 42L,
+    geometry = sf::st_sfc(polygon, crs = 4326)
+  )
+  names(input)[1] <- "regi\u00f3n"
+
+  result <- gbnds_dev_sf_helper(input)
+
+  expect_named(result, c("regi\u00f3n", "population", "geometry"))
+  expect_identical(result[["regi\u00f3n"]], "Hernang\u00f3mez")
+  expect_identical(result$population, 42L)
+  expect_identical(sf::st_crs(result), sf::st_crs(input))
+  expect_identical(as.character(sf::st_geometry_type(result)), "MULTIPOLYGON")
+  expect_identical(
+    unname(sf::st_coordinates(result)[, c("X", "Y")]),
+    polygon[[1]]
+  )
+})
+
+
+test_that("numeric text ADM levels are normalized", {
+  expect_identical(
+    vapply(as.character(0:5), assert_adm_lvl, character(1), USE.NAMES = FALSE),
+    paste0("ADM", 0:5)
+  )
+})
+
+test_that("argument errors preserve braces without evaluating input", {
+  executed <- 0L
+  value <- "{executed <- 1L}"
+  expect_error(
+    match_arg_pretty(value, "valid"),
+    regexp = value,
+    fixed = TRUE,
+    class = "rlang_error"
+  )
+  expect_identical(executed, 0L)
+
+  expect_error(
+    match_arg_pretty("{1", c("{1+1}", "other")),
+    regexp = 'Did you mean "{1+1}"?',
+    fixed = TRUE,
+    class = "rlang_error"
+  )
 })

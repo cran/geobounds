@@ -4,14 +4,17 @@
 #' Returns a summary of selected country codes and their highest available ADM
 #' level in **geoBoundaries**.
 #'
-#' @inherit gb_get source
-#' @inheritParams gb_get_metadata
+#' @inheritParams gb_get country release_type
 #'
 #' @returns
 #' A [tibble][tibble::tbl_df] from \CRANpkg{tibble} containing ISO 3166-1
 #' alpha-3 country codes and their highest available ADM levels.
 #'
-#' @seealso [gb_get()] downloads boundaries for the available ADM levels.
+#' @inherit gb_get source
+#'
+#' @seealso
+#' [gb_get()] downloads boundaries for the available ADM levels.
+#' The [ADM wrappers][gb_get_adm] request a single administrative level.
 #'
 #' @family metadata
 #'
@@ -22,7 +25,7 @@
 #' all <- gb_get_max_adm_lvl()
 #' library(dplyr)
 #'
-#' # Countries with only one ADM level available.
+#' # Countries whose highest available level is ADM1.
 #' all |>
 #'   filter(maxBoundaryType == 1)
 #'
@@ -40,9 +43,33 @@ gb_get_max_adm_lvl <- function(
     adm_lvl = "all",
     release_type = release_type
   )
-  df$rank <- as.integer(as.factor(df$boundaryType))
-  res <- tapply(df$rank, df$boundaryISO, max)
-  tib <- dplyr::tibble(boundaryISO = names(res), maxBoundaryType = res - 1)
-  tib$maxBoundaryType <- as.integer(tib$maxBoundaryType)
-  tib
+
+  if (nrow(df) == 0L) {
+    return(dplyr::tibble(
+      boundaryISO = character(),
+      maxBoundaryType = integer()
+    ))
+  }
+
+  required_cols <- c("boundaryISO", "boundaryType")
+  valid_cols <- all(required_cols %in% names(df))
+  valid_levels <- valid_cols &&
+    is.character(df$boundaryType) &&
+    !anyNA(df$boundaryType) &&
+    all(grepl("^ADM[0-9]+$", df$boundaryType))
+  valid_iso <- valid_cols &&
+    is.character(df$boundaryISO) &&
+    !anyNA(df$boundaryISO) &&
+    all(nzchar(df$boundaryISO))
+  gb_abort_if_not(
+    "Boundary metadata contains invalid country codes." = valid_iso,
+    "Boundary metadata contains invalid ADM levels." = valid_levels
+  )
+
+  adm_number <- as.integer(sub("^ADM", "", df$boundaryType))
+  max_level <- tapply(adm_number, df$boundaryISO, max)
+  dplyr::tibble(
+    boundaryISO = names(max_level),
+    maxBoundaryType = as.integer(max_level)
+  )
 }

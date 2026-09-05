@@ -12,28 +12,27 @@
 #' [gb_get_max_adm_lvl()] to check availability.
 #'
 #' Boundaries downloaded through these functions are not covered by the
-#' package's MIT license.
-#' [Attribution](https://www.geoboundaries.org/index.html#usage) to
-#' **geoBoundaries** and the original sources is required when sharing the
-#' boundaries or derived products.
+#' package's MIT license. Always acknowledge **geoBoundaries** when sharing the
+#' boundaries or derived products. See
+#' <https://www.geoboundaries.org/index.html#usage>. Consult the boundary
+#' metadata for any additional source attribution, license link, share-alike
+#' notice or modification statement required by the boundary's license.
 #'
-#' @details
-#' Each individual country boundary layer is governed by the original license
-#' identified in its boundary metadata. See [gb_get_metadata()]. Users should
-#' cite the sources listed in the metadata and comply with any attribution,
-#' share-alike or non-commercial terms.
+#' @inherit gb_get details
+#'
+#' @inheritParams gb_get
+#'
+#' @inherit gb_get return
+#'
+#' @inherit gb_get source references
+#'
+#' @seealso
+#' `r paste(readLines("man/chunks/seealso.md", encoding="UTF-8"),collapse="\n")`
+#'
+#' @family api
 #'
 #' @name gb_get_adm
 #' @rdname gb_get_adm
-#'
-#' @inherit gb_get return source references
-#' @inheritParams gb_get
-#'
-#' @seealso
-#' - [gb_get_metadata()] inspects boundary metadata and licensing.
-#' - [gb_get_max_adm_lvl()] checks available ADM levels.
-#'
-#' @family api
 #'
 #' @export
 #' @encoding UTF-8

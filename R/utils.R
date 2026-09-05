@@ -24,14 +24,14 @@ assert_adm_lvl <- function(
     cli::cli_abort(
       c(
         "Invalid {.arg adm_lvl} value: {.val {adm_lvl_clean}}.",
-        "Accepted values are {.or {.val {dict}}}."
+        "i" = "Accepted values are {.or {.val {dict}}}."
       ),
       call = call
     )
   }
 
   # Convert numeric levels to the ADM code format.
-  if (is.numeric(adm_lvl)) {
+  if (adm_lvl_clean %in% as.character(0:5)) {
     adm_lvl <- paste0("ADM", adm_lvl)
   }
   toupper(adm_lvl)
@@ -87,9 +87,9 @@ gb_hlp_http_error <- function(resp) {
 #'
 #' @noRd
 gb_hlp_alert_http_error <- function(url, resp) {
-  cli::cli_alert_danger(paste0(
+  cli::cli_alert_warning(paste0(
     "Request to {.url {url}} failed with HTTP status ",
-    "{.field {gb_hlp_http_error(resp)}}."
+    "{.code {gb_hlp_http_error(resp)}}."
   ))
 }
 
@@ -111,19 +111,38 @@ gb_hlp_unique_values <- function(x) {
 #' @param files A character vector of file paths.
 #' @param simplified A logical value. If `TRUE`, select simplified shapefiles.
 #'
+#' @param call The call to display in the error message.
+#'
 #' @returns
-#' A character vector containing matching shapefile paths.
+#' A character scalar containing the matching shapefile path.
 #'
 #' @noRd
-gb_hlp_select_shapefile <- function(files, simplified = FALSE) {
-  shp_files <- files[grepl("shp$", files)]
-  simplified_file <- grepl("simplified", shp_files, fixed = TRUE)
+gb_hlp_select_shapefile <- function(
+  files,
+  simplified = FALSE,
+  call = parent.frame()
+) {
+  shp_files <- files[grepl("[.]shp$", files, ignore.case = TRUE)]
+  simplified_file <- grepl("simplified", shp_files, ignore.case = TRUE)
 
   if (simplified) {
-    return(shp_files[simplified_file])
+    shp_files <- shp_files[simplified_file]
+  } else {
+    shp_files <- shp_files[!simplified_file]
   }
 
-  shp_files[!simplified_file]
+  if (length(shp_files) != 1L) {
+    cli::cli_abort(
+      paste0(
+        "Expected exactly one ",
+        if (simplified) "simplified " else "",
+        "shapefile in the boundary archive, found {length(shp_files)}."
+      ),
+      call = call
+    )
+  }
+
+  shp_files
 }
 
 #' Convert selected columns to numeric
@@ -191,38 +210,50 @@ gb_hlp_replace_month_abbr <- function(x) {
 #' Convert country names to codes
 #'
 #' @param names A vector of country names or codes.
-#' @param out The output code format.
 #' @param call The call to display in the error message.
 #'
 #' @returns
 #' A vector of country codes.
 #'
 #' @noRd
-gbnds_dev_country2iso <- function(names, out = "iso3c", call = parent.frame()) {
+gbnds_dev_country2iso <- function(names, call = parent.frame()) {
+  valid_names <- is.character(names) && length(names) > 0L && !anyNA(names)
+  gb_abort_if_not(
+    "{.arg country} must be a non-empty character vector." = valid_names,
+    call = call
+  )
+
+  names <- trimws(names)
+  gb_abort_if_not(
+    "{.arg country} cannot contain empty strings." = all(nzchar(names)),
+    call = call
+  )
+
   names[tolower(names) == "antartica"] <- "Antarctica"
-  out <- "iso3c"
   if (any(tolower(names) == "all")) {
     return("ALL")
   }
 
   # Vectorize country name conversion.
   outnames <- lapply(names, function(x) {
-    if (grepl("Kosovo", x, ignore.case = TRUE)) {
-      return("XKX")
-    }
-    if (grepl("XKX", x, ignore.case = TRUE)) {
+    if (toupper(x) %in% c("KOSOVO", "XKX")) {
       return("XKX")
     }
     maxname <- max(nchar(x))
     if (maxname > 3) {
-      outnames <- countrycode::countryname(x, out, warn = FALSE)
+      outnames <- countrycode::countryname(x, "iso3c", warn = FALSE)
     } else if (maxname == 3) {
-      outnames <- countrycode::countrycode(x, "iso3c", out, warn = FALSE)
+      outnames <- countrycode::countrycode(
+        x,
+        "iso3c",
+        "iso3c",
+        warn = FALSE
+      )
     } else {
       cli::cli_abort(
         paste0(
-          "Invalid values for {.arg country}. Use country names or ",
-          "ISO 3166-1 alpha-3 codes."
+          "Invalid value for {.arg country}. Use a country name or ",
+          "an ISO 3166-1 alpha-3 code."
         ),
         call = call
       )
@@ -234,16 +265,20 @@ gbnds_dev_country2iso <- function(names, out = "iso3c", call = parent.frame()) {
   linit <- length(outnames)
   outnames2 <- outnames[!is.na(outnames)]
   lend <- length(outnames2)
+  if (lend == 0L) {
+    cli::cli_abort(
+      "No value supplied to {.arg country} could be matched.",
+      call = call
+    )
+  }
   if (linit != lend) {
     ff <- names[is.na(outnames)] # nolint
-    cli::cli_alert_warning(paste0(
-      "Some values supplied to {.arg country} could not be matched ",
-      "unambiguously: ",
-      "{.val {ff}}."
-    ))
-    cli::cli_alert_info(paste0(
-      "Review the values or use ISO 3166-1 alpha-3 ",
-      "codes."
+    cli::cli_warn(c(
+      paste0(
+        "{length(ff)} value{?s} supplied to {.arg country} could not ",
+        "be matched unambiguously: {.val {ff}}."
+      ),
+      "i" = paste0("Review the input or use ISO 3166-1 alpha-3 ", "codes.")
     ))
   }
 
@@ -260,7 +295,7 @@ gbnds_dev_country2iso <- function(names, out = "iso3c", call = parent.frame()) {
 #'
 #' @noRd
 gbnds_dev_sf_helper <- function(data_sf) {
-  # Adapted from sf/read.R:
+  # Adapted from sf/read.R.
   # https://github.com/r-spatial/sf/blob/master/R/read.R
   set_utf8 <- function(x) {
     n <- names(x)
@@ -327,8 +362,9 @@ gbnds_dev_sf_helper <- function(data_sf) {
 match_arg_pretty <- function(arg, choices, call = parent.frame()) {
   arg_name <- as.character(substitute(arg)) # nolint
 
+  sys_par <- sys.parent()
   if (missing(choices)) {
-    formal_args <- formals(sys.function(sys_par <- sys.parent()))
+    formal_args <- formals(sys.function(sys_par))
     choices <- eval(
       formal_args[[as.character(substitute(arg))]],
       envir = sys.frame(sys_par)
@@ -351,31 +387,42 @@ match_arg_pretty <- function(arg, choices, call = parent.frame()) {
   aproxmatch <- pmatch(arg, choices)[1]
 
   if (length(arg) > 1 || is.na(lmatch)) {
-    # Create the expected value error message.
+    # Format values separately so braces in input remain literal.
+    formatted_choices <- vapply(
+      choices,
+      \(value) cli::format_inline("{.str {value}}"),
+      character(1)
+    )
+    # Create the error message for invalid values.
     if (length(choices) == 1) {
-      msg <- paste0("{.str ", choices, "}")
+      msg <- formatted_choices
     } else {
       l_choices <- length(choices)
-      msg <- paste0("{.str ", choices[-l_choices], "}", collapse = ", ")
-      msg <- paste0(msg, " or {.str ", choices[l_choices], "}")
+      msg <- paste(formatted_choices[-l_choices], collapse = ", ")
+      msg <- paste0(msg, " or ", formatted_choices[l_choices])
       # Add "one of" before multiple valid choices.
       msg <- paste0("one of ", msg)
     }
 
     msg <- paste0(msg, ", not ")
-    bad_arg <- paste0("{.str ", arg, "}", collapse = " or ")
+    bad_arg <- paste(
+      vapply(arg, \(value) cli::format_inline("{.str {value}}"), character(1)),
+      collapse = " or "
+    )
     msg <- paste0(msg, bad_arg, ".")
 
     # Suggest a partial match when possible.
     reg_msg <- NULL
     if (!is.na(aproxmatch)) {
-      aprox <- choices[aproxmatch]
-      aprox_val <- paste0("{.str ", aprox, "}", collapse = " or ")
+      aprox_val <- cli::format_inline("{.str {choices[aproxmatch]}}")
       reg_msg <- paste0("Did you mean ", aprox_val, "?")
     }
 
     cli::cli_abort(
-      c(paste0("{.arg {arg_name}} must be ", msg), "i" = reg_msg),
+      c(
+        "{.arg {arg_name}} must be {msg}",
+        "i" = if (!is.null(reg_msg)) "{reg_msg}"
+      ),
       call = call
     )
   }

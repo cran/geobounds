@@ -19,6 +19,7 @@
 #' - `boundaryCanonical`: The canonical name of the boundary.
 #' - `boundarySource`: A comma-separated list of the primary sources for the
 #'   boundary.
+#' - `boundarySourceURL`: The URL of the original boundary source.
 #' - `boundaryLicense`: The original license under which the primary source
 #'   released the boundary.
 #' - `licenseDetail`: Notes about the license.
@@ -63,14 +64,17 @@
 #' - `simplifiedGeometryGeoJSON`: The static download link for the
 #'   simplified GeoJSON.
 #'
-#' @inherit gb_get source
 #' @inheritParams gb_get
 #'
 #' @returns
 #' A [tibble][tibble::tbl_df] from \CRANpkg{tibble} with one row per matching
 #' boundary and the columns described in **Details**.
 #'
-#' @seealso [gb_get()] downloads the boundaries described by the metadata.
+#' @inherit gb_get source
+#'
+#' @seealso
+#' [gb_get()] downloads the boundaries described by the metadata. The
+#' [ADM wrappers][gb_get_adm] request a single administrative level.
 #'
 #' @family metadata
 #'
